@@ -1,10 +1,19 @@
 const express = require("express");
+const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
+const connectDB = require("./src/config/db");
+const authRoute = require("./src/routes/auth");
+
+dotenv.config();
 const app = express();
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+app.use(express.json());
+app.use(cookieParser());
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+connectDB();
+app.use("/api/auth", authRoute);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
