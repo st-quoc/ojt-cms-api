@@ -61,7 +61,6 @@ export const verifyAccessToken = async (req, res, next) => {
   }
 }
 
-// Middleware to check for specific permissions
 export const requirePermission = (permission) => {
   return (req, res, next) => {
     if (!req.user.permissions.includes(permission)) {
@@ -71,10 +70,9 @@ export const requirePermission = (permission) => {
   }
 }
 
-// Middleware to check for specific roles
 export const requireRole = (role) => {
   return (req, res, next) => {
-    if (req.user?.role?.name !== role) {
+    if (!req.user?.role?.name?.includes(role)) {
       return res.status(403).json({ message: 'Access denied' })
     }
     next()

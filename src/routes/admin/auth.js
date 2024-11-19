@@ -3,11 +3,11 @@ import {
   register,
   login,
   refreshToken
-} from '../controllers/authController.js'
+} from '../../controllers/admin/authController.js'
 import {
   verifyAccessToken,
   requireRole
-} from '../middlewares/authMiddleware.js'
+} from '../../middlewares/authMiddleware.js'
 
 const Router = express.Router()
 
@@ -22,6 +22,5 @@ Router.route('/admin').get(
     res.json({ message: 'Welcome Admin' })
   }
 )
-
 
 export const authRoute = Router

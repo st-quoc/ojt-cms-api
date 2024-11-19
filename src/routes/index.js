@@ -1,7 +1,9 @@
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { authRoute } from './auth'
-import { productRoute } from './product'
+import { authRoute } from './admin/auth'
+import { productRoute } from './admin/product'
+import { managerRoute } from './admin/manager'
+import { publicRoute } from './user/public'
 
 const Router = express.Router()
 
@@ -9,10 +11,10 @@ Router.get('/status', (req, res) => {
   res.status(StatusCodes.OK).json({ message: 'APIs V1 are ready to use.' })
 })
 
-/** User APIs */
 Router.use('/auth', authRoute)
-
-/** Dashboard APIs */
 Router.use('/product', productRoute)
+Router.use('/manager', managerRoute)
+
+Router.use('/public', publicRoute)
 
 export const APIs_V1 = Router

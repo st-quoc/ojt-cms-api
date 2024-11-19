@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs'
-import User from '../models/User.js'
+import User from '../../models/User.js'
 import {
   loginValidation,
   registerValidation
-} from '../validators/authValidator.js'
+} from '../../validators/authValidator.js'
 import dotenv from 'dotenv'
 import {
   ACCESS_TOKEN_SECRET_SIGNATURE,
@@ -141,7 +141,8 @@ export const refreshToken = async (req, res) => {
 
     return res.status(StatusCodes.OK).json({ accessToken })
   } catch (err) {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to refresh token!' })
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Failed to refresh token!' })
   }
 }
-
