@@ -1,96 +1,147 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const {
+import bcrypt from 'bcryptjs'
+import User from '../models/User.js'
+import {
   loginValidation,
-  registerValidation,
-} = require("../validators/authValidator");
-require("dotenv").config();
+  registerValidation
+} from '../validators/authValidator.js'
+import dotenv from 'dotenv'
+import {
+  ACCESS_TOKEN_SECRET_SIGNATURE,
+  JWTProvider,
+  REFRESH_TOKEN_SECRET_SIGNATURE
+} from '~/providers/JwtProvider.js'
+import { StatusCodes } from 'http-status-codes'
 
-const generateAccessToken = (user) => {
-  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: "1m",
-  });
-};
+dotenv.config()
 
-const generateRefreshToken = (user) => {
-  return jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: "7d",
-  });
-};
+export const register = async (req, res) => {
+  const { error } = registerValidation(req.body)
+  if (error)
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: error.details[0].message })
 
-// Đăng ký người dùng mới
-exports.register = async (req, res) => {
-  const { error } = registerValidation(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
+  const { name, email, password, address } = req.body
 
-  const { name, email, password, address } = req.body;
-
-  // Kiểm tra email đã tồn tại
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email })
   if (existingUser) {
-    return res.status(400).json({ message: "Email này đã được sử dụng." });
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: 'Email này đã được sử dụng.' })
   }
 
-  // Mã hóa mật khẩu
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Tạo người dùng mới
-  const newUser = new User({
+  const hashedPassword = await bcrypt.hash(password, 10)
+  const userInfo = {
     name,
     email,
     password: hashedPassword,
-    address,
-  });
-
-  await newUser.save();
-
-  const accessToken = generateAccessToken(newUser);
-  const refreshToken = generateRefreshToken(newUser);
-
-  newUser.refreshToken = refreshToken;
-  await newUser.save();
-
-  res.cookie("refreshToken", refreshToken, { httpOnly: true });
-  res.json({ accessToken });
-};
-
-// Đăng nhập người dùng
-exports.login = async (req, res) => {
-  const { error } = loginValidation(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
-
-  const { email, password } = req.body;
-  const user = await User.findOne({ email }).populate("role");
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res
-      .status(401)
-      .json({ message: "Email hoặc mật khẩu không chính xác." });
+    address
   }
+  const newUser = new User(userInfo)
+  await newUser.save()
 
-  const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(user);
+  const accessToken = await JWTProvider.generateToken(
+    userInfo,
+    ACCESS_TOKEN_SECRET_SIGNATURE,
+    '1h'
+  )
 
-  user.refreshToken = refreshToken;
-  await user.save();
+  const refreshToken = await JWTProvider.generateToken(
+    userInfo,
+    REFRESH_TOKEN_SECRET_SIGNATURE,
+    '14 days'
+  )
 
-  res.cookie("refreshToken", refreshToken, { httpOnly: true });
-  res.json({ accessToken });
-};
+  newUser.refreshToken = refreshToken
+  await newUser.save()
 
-// Cấp lại access token
-exports.refreshToken = async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
-  if (!refreshToken)
-    return res.status(401).json({ message: "Refresh token required." });
+  res.cookie('refreshToken', refreshToken, { httpOnly: true })
+  res.json({ accessToken })
+}
 
-  const user = await User.findOne({ refreshToken });
-  if (!user) return res.status(403).json({ message: "Invalid refresh token." });
+export const login = async (req, res) => {
+  try {
+    const { error } = loginValidation(req.body)
+    if (error)
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: error.details[0].message })
+
+    const { email, password } = req.body
+    const user = await User.findOne({ email }).populate('role')
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res
+        .status(401)
+        .json({ message: 'Email hoặc mật khẩu không chính xác.' })
+    }
+
+    const userInfo = {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    }
+
+    const accessToken = await JWTProvider.generateToken(
+      userInfo,
+      ACCESS_TOKEN_SECRET_SIGNATURE,
+      '1h'
+    )
+
+    const refreshToken = await JWTProvider.generateToken(
+      userInfo,
+      REFRESH_TOKEN_SECRET_SIGNATURE,
+      '14 days'
+    )
+
+    user.accessToken = accessToken
+    user.refreshToken = refreshToken
+    await user.save()
+
+    res.status(StatusCodes.OK).json({
+      ...userInfo,
+      accessToken,
+      refreshToken
+    })
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error)
+  }
+}
+
+export const refreshToken = async (req, res) => {
+  const refreshToken = req.body.refreshToken
+  if (!refreshToken) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'Refresh token required.' })
+  }
 
   try {
-    const newAccessToken = generateAccessToken(user);
-    res.json({ accessToken: newAccessToken });
+    const refreshTokenDecoded = await JWTProvider.verifyToken(
+      refreshToken,
+      REFRESH_TOKEN_SECRET_SIGNATURE
+    )
+
+    const user = await User.findOne({ _id: refreshTokenDecoded.id })
+    if (!user) {
+      return res.status(403).json({ message: 'Invalid refresh token.' })
+    }
+
+    const userInfo = {
+      id: user._id,
+      name: user.name,
+      email: user.email
+    }
+
+    const accessToken = await JWTProvider.generateToken(
+      userInfo,
+      ACCESS_TOKEN_SECRET_SIGNATURE,
+      '1h'
+    )
+
+    return res.status(StatusCodes.OK).json({ accessToken })
   } catch (err) {
-    return res.status(403).json({ message: "Invalid refresh token." });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to refresh token!' })
   }
-};
+}
+

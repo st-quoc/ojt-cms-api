@@ -1,33 +1,27 @@
-const express = require("express");
-const {
+import express from 'express'
+import {
   register,
   login,
-  refreshToken,
-} = require("../controllers/authController");
-const {
+  refreshToken
+} from '../controllers/authController.js'
+import {
   verifyAccessToken,
-  requirePermission,
-  requireRole,
-} = require("../middlewares/authMiddleware");
-const router = express.Router();
+  requireRole
+} from '../middlewares/authMiddleware.js'
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/refresh-token", refreshToken);
+const Router = express.Router()
 
-// Protected route chỉ cho người dùng có vai trò 'admin'
-router.get("/admin", verifyAccessToken, requireRole("admin"), (req, res) => {
-  res.json({ message: "Welcome Admin" });
-});
+Router.route('/register').post(register)
+Router.route('/login').post(login)
+Router.route('/refresh-token').post(refreshToken)
 
-// Protected route yêu cầu quyền 'manage_products'
-router.get(
-  "/products",
+Router.route('/admin').get(
   verifyAccessToken,
-  requirePermission("manage_products"),
+  requireRole('admin'),
   (req, res) => {
-    res.json({ message: "Access granted to manage products" });
+    res.json({ message: 'Welcome Admin' })
   }
-);
+)
 
-module.exports = router;
+
+export const authRoute = Router
