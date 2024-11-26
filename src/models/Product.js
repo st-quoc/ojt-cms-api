@@ -1,33 +1,22 @@
 import mongoose from 'mongoose'
 
+const variantSchema = new mongoose.Schema({
+  size: { type: mongoose.Schema.Types.ObjectId, ref: 'Size', required: true },
+  color: { type: mongoose.Schema.Types.ObjectId, ref: 'Color', required: true },
+  price: { type: Number, required: true },
+  stock: { type: Number, required: true },
+})
+
 const productSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      unique: true
-    },
-    price: {
-      type: Number,
-      required: true,
-      min: 0
-    },
-    category: {
-      type: String,
-      required: true
-    },
-    description: {
-      type: String,
-      default: ''
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
+    name: { type: String, required: true },
+    sortDesc: { type: String, required: true },
+    fullDesc: { type: String, required: true },
+    categories: { type: [String], default: [] },
+    images: { type: [String], required: true },
+    variants: { type: [variantSchema], required: true },
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 )
 
 const Product = mongoose.model('Product', productSchema)

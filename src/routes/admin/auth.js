@@ -2,11 +2,11 @@ import express from 'express'
 import {
   register,
   login,
-  refreshToken
+  refreshToken,
 } from '../../controllers/admin/authController.js'
 import {
   verifyAccessToken,
-  requireRole
+  requireRole,
 } from '../../middlewares/authMiddleware.js'
 
 const Router = express.Router()

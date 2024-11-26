@@ -1,4 +1,4 @@
-import babelParser from '@babel/eslint-parser';
+import babelParser from '@babel/eslint-parser'
 
 export default [
   { ignores: [] },
@@ -42,4 +42,4 @@ export default [
       'arrow-spacing': 1,
     },
   },
-];
+]
