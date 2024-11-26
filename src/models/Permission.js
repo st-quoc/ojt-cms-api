@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const permissionSchema = new mongoose.Schema({
   name: { type: String, unique: true, required: true },
-  description: String
+  description: { type: String, required: true },
 })
 
 export default mongoose.model('Permission', permissionSchema)

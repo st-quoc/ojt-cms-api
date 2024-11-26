@@ -1,19 +1,15 @@
-import express from 'express';
+import express from 'express'
 import {
   requirePermission,
   verifyAccessToken,
-} from '../../middlewares/authMiddleware.js';
-const Router = express.Router();
+} from '../../middlewares/authMiddleware.js'
+import { adminCreateProduct } from '../../controllers/admin/productController.js'
+const Router = express.Router()
 
-// Router.route('/product/get_all').post(register)
-
-// Protected route requiring 'manage_products' permission
-Router.route('/product').get(
+Router.route('/create').post(
   verifyAccessToken,
-  requirePermission('manage_products'),
-  (req, res) => {
-    res.json({ message: 'Access granted to manage products' });
-  }
-);
+  requirePermission('create_product'),
+  adminCreateProduct
+)
 
-export const productRoute = Router;
+export const productAdminRoute = Router
