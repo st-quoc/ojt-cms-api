@@ -2,6 +2,7 @@ import Product from '../../models/Product.js'
 import { StatusCodes } from 'http-status-codes'
 import Size from '../../models/Size.js'
 import Color from '../../models/Color.js'
+import Category from '../../models/Category.js'
 
 export const adminGetListProduct = async (req, res) => {
   try {
@@ -62,7 +63,6 @@ export const adminCreateProduct = async (req, res) => {
       images,
       variants,
     } = req.body
-
     if (!name || !sortDesc || !fullDesc || !images || !variants) {
       return res.status(400).json({ message: 'Missing required fields' })
     }
@@ -127,8 +127,6 @@ export const adminGetProductDetail = async (req, res) => {
         .json({ message: 'Product not found' })
     }
 
-    const categories = product.categories.map((category) => category.name)
-
     const variants = product.variants.map((variant) => ({
       size: variant.size,
       color: variant.color,
@@ -142,7 +140,7 @@ export const adminGetProductDetail = async (req, res) => {
       images: product.images,
       sortDesc: product.sortDesc,
       fullDesc: product.fullDesc,
-      categories,
+      categories: product.categories,
       variants,
     }
 

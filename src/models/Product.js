@@ -12,7 +12,9 @@ const productSchema = new mongoose.Schema(
     name: { type: String, required: true },
     sortDesc: { type: String, required: true },
     fullDesc: { type: String, required: true },
-    categories: { type: [String], default: [] },
+    categories: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    ],
     images: { type: [String], required: true },
     variants: { type: [variantSchema], required: true },
   },
