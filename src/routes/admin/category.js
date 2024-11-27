@@ -4,11 +4,13 @@ import {
   adminCreateCategory,
   adminDeleteCategory,
   adminGetListCategory,
+  adminUpdateCategory,
 } from '../../controllers/admin/categoryController.js'
 const Router = express.Router()
 
 Router.route('/list').get(verifyAccessToken, adminGetListCategory)
 Router.route('/create').post(verifyAccessToken, adminCreateCategory)
-Router.route('/delete').delete(verifyAccessToken, adminDeleteCategory)
+Router.route('/update/:id').put(verifyAccessToken, adminUpdateCategory)
+Router.route('/delete/:id').delete(verifyAccessToken, adminDeleteCategory)
 
 export const categoryAdminRoute = Router

@@ -2,101 +2,105 @@ import Product from '../../models/Product.js'
 
 export const getListProducts = async (req, res) => {
   try {
-    const {
-      name,
-      category,
-      minPrice,
-      maxPrice,
-      color,
-      size,
-      stockCondition,
-      stockValue,
-      page = 1,
-      limit = 10,
-    } = req.query
-
-    const filter = {}
-
-    if (name) {
-      filter.name = { $regex: name, $options: 'i' }
-    }
-
-    if (category) {
-      filter.categories = { $in: [category] }
-    }
-
-    if (minPrice || maxPrice) {
-      filter['variants.price'] = {}
-      if (minPrice) filter['variants.price'].$gte = parseFloat(minPrice)
-      if (maxPrice) filter['variants.price'].$lte = parseFloat(maxPrice)
-    }
-
-    if (color) {
-      filter['variants.color'] = { $in: [color] }
-    }
-
-    if (size) {
-      filter['variants.size'] = { $in: [size] }
-    }
-
-    if (stockCondition && stockValue) {
-      const stockQuery = {}
-      if (stockCondition === '>') {
-        stockQuery.$gt = parseInt(stockValue)
-      } else if (stockCondition === '<') {
-        stockQuery.$lt = parseInt(stockValue)
-      } else {
-        stockQuery.$eq = parseInt(stockValue)
-      }
-      filter['variants.stock'] = stockQuery
-    }
-
+    const { page = 1, limit = 10, search = '' } = req.query
     const skip = (page - 1) * limit
 
-    const products = await Product.find(filter)
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {}
+
+    const products = await Product.find(query)
+      .populate({
+        path: 'categories',
+        select: 'name',
+      })
+      .populate({
+        path: 'variants.size',
+        select: 'name',
+      })
+      .populate({
+        path: 'variants.color',
+        select: 'name',
+      })
       .skip(skip)
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 })
-      .populate('categories', 'name')
-      .populate('variants.color', 'name')
-      .populate('variants.size', 'name')
+      .limit(Number(limit))
 
-    const totalProducts = await Product.countDocuments(filter)
+    const totalProducts = await Product.countDocuments(query)
 
-    res.status(200).json({
-      products: products.map((product) => ({
-        _id: product._id,
-        name: product.name,
-        sortDesc: product.sortDesc,
-        fullDesc: product.fullDesc,
-        categories: product.categories.map((cat) => cat.name),
-        images: product.images,
-        variants: product.variants.map((variant) => ({
+    const productList = products.map((product) => {
+      const categories = product.categories
+        ?.filter((category) => category?.name)
+        .map((category) => category.name)
+
+      const variants = product.variants
+        ?.filter((variant) => variant?.size?.name && variant?.color?.name)
+        .map((variant) => ({
           size: variant.size.name,
           color: variant.color.name,
-          price: variant.price,
           stock: variant.stock,
-        })),
-        createdAt: product.createdAt,
-        updatedAt: product.updatedAt,
-      })),
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalProducts / limit),
-        totalProducts,
-      },
+          price: variant.price,
+        }))
+
+      return {
+        id: product._id,
+        name: product.name,
+        images: product.images,
+        sortDesc: product.sortDesc,
+        description: product.fullDesc,
+        categories,
+        variants,
+      }
+    })
+
+    res.status(200).json({
+      products: productList,
+      totalProducts,
+      totalPages: Math.ceil(totalProducts / limit),
+      currentPage: Number(page),
+      perPage: Number(limit),
     })
   } catch (error) {
     res.status(500).json({
-      message: 'Error fetching products.',
+      message: 'Server error',
       error: error.message,
     })
   }
 }
 
 export const getDetailProduct = async (req, res) => {
-  // eslint-disable-next-line no-console
-  console.log('🚀  res  🚀', res)
-  // eslint-disable-next-line no-console
-  console.log('🚀  req  🚀', req)
+  try {
+    const { id } = req.params
+
+    const product = await Product.findById(id)
+      .populate('categories')
+      .populate('variants.size')
+      .populate('variants.color')
+
+    if (!product) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Product not found' })
+    }
+
+    const variants = product.variants.map((variant) => ({
+      size: variant.size,
+      color: variant.color,
+      stock: variant.stock,
+      price: variant.price,
+    }))
+
+    const productDetail = {
+      id: product._id,
+      name: product.name,
+      images: product.images,
+      sortDesc: product.sortDesc,
+      fullDesc: product.fullDesc,
+      categories: product.categories,
+      variants,
+    }
+
+    res.status(StatusCodes.OK).json({ product: productDetail })
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Server error', error: error.message })
+  }
 }

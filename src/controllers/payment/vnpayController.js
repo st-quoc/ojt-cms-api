@@ -85,9 +85,7 @@ export const createPaymentUrl = async (req, res) => {
     })
 
     res.json({ paymentUrl })
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Lỗi khi tạo URL thanh toán:', err)
+  } catch {
     res.status(500).send('Có lỗi xảy ra khi tạo URL thanh toán!')
   }
 }
@@ -121,9 +119,7 @@ export const handleVnpayReturn = async (req, res) => {
     } else {
       res.status(400).send('Dữ liệu trả về không hợp lệ.')
     }
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log('🚀  err  🚀', err)
+  } catch {
     res.status(500).send('Có lỗi xảy ra khi xử lý phản hồi từ VNPay.')
   }
 }

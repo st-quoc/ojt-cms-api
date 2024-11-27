@@ -43,7 +43,7 @@ export const register = async (req, res) => {
   const accessToken = await JWTProvider.generateToken(
     userInfo,
     ACCESS_TOKEN_SECRET_SIGNATURE,
-    '1h'
+    '5m'
   )
 
   const refreshToken = await JWTProvider.generateToken(
@@ -87,7 +87,7 @@ export const login = async (req, res) => {
     const accessToken = await JWTProvider.generateToken(
       userInfo,
       ACCESS_TOKEN_SECRET_SIGNATURE,
-      '1h'
+      '5m'
     )
 
     const refreshToken = await JWTProvider.generateToken(
@@ -130,23 +130,22 @@ export const refreshToken = async (req, res) => {
     if (!user) {
       return res.status(403).json({ message: 'Invalid refresh token.' })
     }
-
+    const permissions = user.permissions.map((perm) => perm.name)
     const userInfo = {
       id: user._id,
       name: user.name,
       email: user.email,
+      permissions: permissions,
     }
 
     const accessToken = await JWTProvider.generateToken(
       userInfo,
       ACCESS_TOKEN_SECRET_SIGNATURE,
-      '1h'
+      '5m'
     )
 
     return res.status(StatusCodes.OK).json({ accessToken })
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log(err)
+  } catch {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: 'Failed to refresh token!' })
