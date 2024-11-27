@@ -46,7 +46,7 @@ export const verifyAccessToken = async (req, res, next) => {
 
 export const requirePermission = (permission) => {
   return (req, res, next) => {
-    if (!req.userInfo.permissions.includes(permission)) {
+    if (!req.userInfo?.permissions?.includes(permission)) {
       return res.status(403).json({ message: 'Access denied' })
     }
     next()

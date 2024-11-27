@@ -2,7 +2,6 @@ import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { authRoute } from './admin/auth.js'
 import { productAdminRoute } from './admin/product.js'
-// import { managerRoute } from './admin/manager.js'
 import { publicRoute } from './user/public.js'
 import { vnpayRoute } from './vnpay/payment.js'
 import { sizeAdminRoute } from './admin/size.js'
@@ -21,7 +20,6 @@ Router.use('/admin/product', productAdminRoute)
 Router.use('/admin/size', sizeAdminRoute)
 Router.use('/admin/color', colorAdminRoute)
 Router.use('/admin/category', categoryAdminRoute)
-// Router.use('/manager', managerRoute);
 
 Router.use('/public', publicRoute)
 Router.use('/vnpay', vnpayRoute)

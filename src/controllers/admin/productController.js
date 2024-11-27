@@ -6,27 +6,42 @@ import Category from '../../models/Category.js'
 
 export const adminGetListProduct = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query
+    const { page = 1, limit = 10, search = '' } = req.query
     const skip = (page - 1) * limit
 
-    const products = await Product.find()
-      .populate('categories')
-      .populate('variants.size')
-      .populate('variants.color')
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {}
+
+    const products = await Product.find(query)
+      .populate({
+        path: 'categories',
+        select: 'name',
+      })
+      .populate({
+        path: 'variants.size',
+        select: 'name',
+      })
+      .populate({
+        path: 'variants.color',
+        select: 'name',
+      })
       .skip(skip)
       .limit(Number(limit))
 
-    const totalProducts = await Product.countDocuments()
+    const totalProducts = await Product.countDocuments(query)
 
     const productList = products.map((product) => {
-      const categories = product.categories.map((category) => category.name)
+      const categories = product.categories
+        ?.filter((category) => category?.name)
+        .map((category) => category.name)
 
-      const variants = product.variants.map((variant) => ({
-        size: variant.size.name,
-        color: variant.color.name,
-        stock: variant.stock,
-        price: variant.price,
-      }))
+      const variants = product.variants
+        ?.filter((variant) => variant?.size?.name && variant?.color?.name)
+        .map((variant) => ({
+          size: variant.size.name,
+          color: variant.color.name,
+          stock: variant.stock,
+          price: variant.price,
+        }))
 
       return {
         id: product._id,
@@ -39,7 +54,7 @@ export const adminGetListProduct = async (req, res) => {
       }
     })
 
-    res.status(StatusCodes.OK).json({
+    res.status(200).json({
       products: productList,
       totalProducts,
       totalPages: Math.ceil(totalProducts / limit),
@@ -47,9 +62,10 @@ export const adminGetListProduct = async (req, res) => {
       perPage: Number(limit),
     })
   } catch (error) {
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: 'Server error', error: error.message })
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message,
+    })
   }
 }
 
@@ -192,7 +208,6 @@ export const adminEditProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' })
     }
 
-    // Xử lý danh mục
     let categoryDocs = []
     if (categories.length > 0) {
       categoryDocs = await Category.find({ _id: { $in: categories } })

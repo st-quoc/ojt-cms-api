@@ -3,8 +3,8 @@ import mongoose from 'mongoose'
 const categorySchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    desc: { type: String },
-    image: { type: String },
+    description: { type: String },
+    thumbnail: { type: String },
   },
   { timestamps: true }
 )

@@ -3,11 +3,11 @@ import babelParser from '@babel/eslint-parser'
 export default [
   { ignores: [] },
   {
-    files: ['**/*.js'], // Match your JavaScript files
+    files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
-      parser: babelParser, // Use the parser as an object
+      parser: babelParser,
       parserOptions: {
         requireConfigFile: false,
         allowImportExportEverywhere: true,
@@ -19,7 +19,7 @@ export default [
         process: 'readonly',
       },
     },
-    plugins: {}, // Add your plugins here
+    plugins: {},
     rules: {
       'no-console': 1,
       'no-extra-boolean-cast': 0,

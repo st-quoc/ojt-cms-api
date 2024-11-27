@@ -13,7 +13,7 @@ const Router = express.Router()
 
 Router.route('/register').post(register)
 Router.route('/login').post(login)
-Router.route('/refresh-token').post(refreshToken)
+Router.route('/refresh-token').put(refreshToken)
 
 Router.route('/admin').get(
   verifyAccessToken,
