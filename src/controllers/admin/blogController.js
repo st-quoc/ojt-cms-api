@@ -14,7 +14,7 @@ export const adminCreateBlog = async (req, res) => {
     const newBlog = new Blog({
       title,
       description,
-      images: images || [], // Lưu hình ảnh nếu có
+      images: images || [],
       status: status || 'Draft',
       createdAt: new Date(),
     })
@@ -47,16 +47,13 @@ export const adminCreateBlog = async (req, res) => {
 
 export const getAllBlogs = async (req, res) => {
   try {
-    // Lấy tất cả blog từ database
     const blogs = await Blog.find()
     console.log(blogs)
-    // Trả về danh sách blog
     res.status(200).json({
       success: true,
       data: blogs,
     })
   } catch (error) {
-    // Xử lý lỗi
     res.status(500).json({
       success: false,
       message: 'Error retrieving blogs',
