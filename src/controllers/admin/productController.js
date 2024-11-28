@@ -6,10 +6,60 @@ import Category from '../../models/Category.js'
 
 export const adminGetListProduct = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query
+    const {
+      page = 1,
+      limit = 10,
+      search = '',
+      category = '',
+      priceMin = '',
+      priceMax = '',
+      color = '',
+      size = '',
+      stockCondition = '>',
+      stockValue = '',
+    } = req.query
+
     const skip = (page - 1) * limit
 
-    const query = search ? { name: { $regex: search, $options: 'i' } } : {}
+    let query = {}
+
+    if (search) {
+      query.name = { $regex: search, $options: 'i' }
+    }
+
+    if (category) {
+      const categoriesArray =
+        typeof category === 'string' ? category.split(',') : category
+      query.categories = { $in: categoriesArray }
+    }
+
+    if (priceMin) {
+      query['variants.price'] = { $gte: Number(priceMin) }
+    }
+    if (priceMax) {
+      query['variants.price'] = query['variants.price'] || {}
+      query['variants.price'].$lte = Number(priceMax)
+    }
+
+    if (color) {
+      const colorsArray = typeof color === 'string' ? color.split(',') : color
+      query['variants.color'] = { $in: colorsArray }
+    }
+
+    if (size) {
+      const sizesArray = typeof size === 'string' ? size.split(',') : size
+      query['variants.size'] = { $in: sizesArray }
+    }
+
+    if (stockValue) {
+      if (stockCondition === '>') {
+        query['variants.stock'] = { $gt: Number(stockValue) }
+      } else if (stockCondition === '<') {
+        query['variants.stock'] = { $lt: Number(stockValue) }
+      } else if (stockCondition === '=') {
+        query['variants.stock'] = { $eq: Number(stockValue) }
+      }
+    }
 
     const products = await Product.find(query)
       .populate({
@@ -29,30 +79,32 @@ export const adminGetListProduct = async (req, res) => {
 
     const totalProducts = await Product.countDocuments(query)
 
-    const productList = products.map((product) => {
-      const categories = product.categories
-        ?.filter((category) => category?.name)
-        .map((category) => category.name)
+    const productList = products
+      .filter((product) => product.variants && product.variants.length > 0)
+      .map((product) => {
+        const categories = product.categories
+          ?.filter((category) => category?.name)
+          .map((category) => category.name)
 
-      const variants = product.variants
-        ?.filter((variant) => variant?.size?.name && variant?.color?.name)
-        .map((variant) => ({
-          size: variant.size.name,
-          color: variant.color.name,
-          stock: variant.stock,
-          price: variant.price,
-        }))
+        const variants = product.variants
+          ?.filter((variant) => variant?.size?.name && variant?.color?.name)
+          .map((variant) => ({
+            size: variant.size.name,
+            color: variant.color.name,
+            stock: variant.stock,
+            price: variant.price,
+          }))
 
-      return {
-        id: product._id,
-        name: product.name,
-        images: product.images,
-        sortDesc: product.sortDesc,
-        description: product.fullDesc,
-        categories,
-        variants,
-      }
-    })
+        return {
+          id: product._id,
+          name: product.name,
+          images: product.images,
+          sortDesc: product.sortDesc,
+          description: product.fullDesc,
+          categories,
+          variants,
+        }
+      })
 
     res.status(200).json({
       products: productList,
