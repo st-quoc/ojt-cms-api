@@ -2,10 +2,64 @@ import Product from '../../models/Product.js'
 
 export const getListProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query
+    const {
+      page = 1,
+      limit = 10,
+      search = '',
+      category = [],
+      priceMin = 0,
+      priceMax = 999999999,
+      color = [],
+      size = [],
+      stockCondition = '>',
+      stockValue = 0,
+    } = req.query
+
     const skip = (page - 1) * limit
 
-    const query = search ? { name: { $regex: search, $options: 'i' } } : {}
+    const query = {}
+
+    if (search) {
+      query.name = { $regex: search, $options: 'i' }
+    }
+
+    if (category.length > 0) {
+      query.categories = { $in: category }
+    }
+
+    query['variants.price'] = { $gte: Number(priceMin), $lte: Number(priceMax) }
+
+    if (color.length > 0) {
+      query['variants.color.name'] = { $in: color }
+    }
+
+    if (size.length > 0) {
+      query['variants.size.name'] = { $in: size }
+    }
+
+    const stockFilter = {}
+    switch (stockCondition) {
+      case '>':
+        stockFilter.$gt = Number(stockValue)
+        break
+      case '<':
+        stockFilter.$lt = Number(stockValue)
+        break
+      case '>=':
+        stockFilter.$gte = Number(stockValue)
+        break
+      case '<=':
+        stockFilter.$lte = Number(stockValue)
+        break
+      case '=':
+        stockFilter.$eq = Number(stockValue)
+        break
+      default:
+        break
+    }
+    if (Object.keys(stockFilter).length > 0) {
+      query['variants.stock'] = stockFilter
+    }
 
     const products = await Product.find(query)
       .populate({
