@@ -18,6 +18,24 @@ export const adminCreateSize = async (req, res) => {
   }
 }
 
+export const adminGetSizeById = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const size = await Size.findById(id)
+
+    if (!size) {
+      return res.status(404).json({ message: 'Size not found' })
+    }
+
+    res.status(200).json(size)
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error fetching size by ID', error: error.message })
+  }
+}
+
 export const adminGetListSize = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '' } = req.query
