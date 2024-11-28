@@ -1,5 +1,6 @@
 import Product from '../../models/Product.js'
 import { StatusCodes } from 'http-status-codes'
+
 export const getListProducts = async (req, res) => {
   try {
     const {
@@ -13,6 +14,7 @@ export const getListProducts = async (req, res) => {
       size = '',
       stockCondition = '>',
       stockValue = '',
+      sortBy = 'default',
     } = req.query
 
     const skip = (page - 1) * limit
@@ -57,6 +59,22 @@ export const getListProducts = async (req, res) => {
       }
     }
 
+    let sort = {}
+    switch (sortBy) {
+      case 'lowToHigh':
+        sort = { 'variants.price': 1 }
+        break
+      case 'highToLow':
+        sort = { 'variants.price': -1 }
+        break
+      case 'newest':
+        sort = { createdAt: -1 }
+        break
+      case 'default':
+      default:
+        sort = { name: 1 }
+    }
+
     const products = await Product.find(query)
       .populate({
         path: 'categories',
@@ -72,6 +90,7 @@ export const getListProducts = async (req, res) => {
       })
       .skip(skip)
       .limit(Number(limit))
+      .sort(sort)
 
     const totalProducts = await Product.countDocuments(query)
 
