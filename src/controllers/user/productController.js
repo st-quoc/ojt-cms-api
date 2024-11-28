@@ -6,59 +6,55 @@ export const getListProducts = async (req, res) => {
       page = 1,
       limit = 10,
       search = '',
-      category = [],
-      priceMin = 0,
-      priceMax = 999999999,
-      color = [],
-      size = [],
+      category = '',
+      priceMin = '',
+      priceMax = '',
+      color = '',
+      size = '',
       stockCondition = '>',
-      stockValue = 0,
+      stockValue = '',
     } = req.query
 
     const skip = (page - 1) * limit
 
-    const query = {}
+    let query = {}
 
     if (search) {
       query.name = { $regex: search, $options: 'i' }
     }
 
-    if (category.length > 0) {
-      query.categories = { $in: category }
+    if (category) {
+      const categoriesArray =
+        typeof category === 'string' ? category.split(',') : category
+      query.categories = { $in: categoriesArray }
     }
 
-    query['variants.price'] = { $gte: Number(priceMin), $lte: Number(priceMax) }
-
-    if (color.length > 0) {
-      query['variants.color.name'] = { $in: color }
+    if (priceMin) {
+      query['variants.price'] = { $gte: Number(priceMin) }
+    }
+    if (priceMax) {
+      query['variants.price'] = query['variants.price'] || {}
+      query['variants.price'].$lte = Number(priceMax)
     }
 
-    if (size.length > 0) {
-      query['variants.size.name'] = { $in: size }
+    if (color) {
+      const colorsArray = typeof color === 'string' ? color.split(',') : color
+      query['variants.color'] = { $in: colorsArray }
     }
 
-    const stockFilter = {}
-    switch (stockCondition) {
-      case '>':
-        stockFilter.$gt = Number(stockValue)
-        break
-      case '<':
-        stockFilter.$lt = Number(stockValue)
-        break
-      case '>=':
-        stockFilter.$gte = Number(stockValue)
-        break
-      case '<=':
-        stockFilter.$lte = Number(stockValue)
-        break
-      case '=':
-        stockFilter.$eq = Number(stockValue)
-        break
-      default:
-        break
+    if (size) {
+      const sizesArray = typeof size === 'string' ? size.split(',') : size
+      query['variants.size'] = { $in: sizesArray }
     }
-    if (Object.keys(stockFilter).length > 0) {
-      query['variants.stock'] = stockFilter
+
+    if (stockValue) {
+      if (stockCondition === '>') {
+        query['variants.stock'] = { $gt: Number(stockValue) }
+      } else if (stockCondition === '<') {
+        query['variants.stock'] = { $lt: Number(stockValue) }
+      } else if (stockCondition === '=') {
+        query['variants.stock'] = { $eq: Number(stockValue) }
+      }
     }
 
     const products = await Product.find(query)
@@ -79,30 +75,34 @@ export const getListProducts = async (req, res) => {
 
     const totalProducts = await Product.countDocuments(query)
 
-    const productList = products.map((product) => {
-      const categories = product.categories
-        ?.filter((category) => category?.name)
-        .map((category) => category.name)
+    const productList = products
+      .filter((product) => product.variants && product.variants.length > 0)
+      .map((product) => {
+        const categories = product.categories
+          ?.filter((category) => category?.name)
+          .map((category) => category.name)
 
-      const variants = product.variants
-        ?.filter((variant) => variant?.size?.name && variant?.color?.name)
-        .map((variant) => ({
-          size: variant.size,
-          color: variant.color,
-          stock: variant.stock,
-          price: variant.price,
-        }))
+        const variants = product.variants
+          ?.filter((variant) => variant?.size?.name && variant?.color?.name)
+          .map((variant) => ({
+            size: variant.size.name,
+            color: variant.color.name,
+            sizeId: variant.size._id,
+            colorId: variant.color._id,
+            stock: variant.stock,
+            price: variant.price,
+          }))
 
-      return {
-        id: product._id,
-        name: product.name,
-        images: product.images,
-        sortDesc: product.sortDesc,
-        description: product.fullDesc,
-        categories,
-        variants,
-      }
-    })
+        return {
+          id: product._id,
+          name: product.name,
+          images: product.images,
+          sortDesc: product.sortDesc,
+          description: product.fullDesc,
+          categories,
+          variants,
+        }
+      })
 
     res.status(200).json({
       products: productList,
