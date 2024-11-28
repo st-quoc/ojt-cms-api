@@ -6,9 +6,11 @@ import { publicRoute } from './user/public.js'
 import { vnpayRoute } from './vnpay/payment.js'
 import { sizeAdminRoute } from './admin/size.js'
 import { colorAdminRoute } from './admin/color.js'
+import { sizeUserRoute } from './user/size.js'
+import { colorUserRoute } from './user/color.js'
 import { categoryAdminRoute } from './admin/category.js'
 import { productUserRoute } from './user/product.js'
-
+import { cartRoutes } from './user/cartRoute.js'
 const Router = express.Router()
 
 Router.get('/status', (req, res) => {
@@ -25,5 +27,7 @@ Router.use('/public', publicRoute)
 Router.use('/vnpay', vnpayRoute)
 
 Router.use('/user/product', productUserRoute)
-
+Router.use('/cart', cartRoutes)
+Router.use('/user/size', sizeUserRoute)
+Router.use('/user/color', colorUserRoute)
 export const APIs_V1 = Router

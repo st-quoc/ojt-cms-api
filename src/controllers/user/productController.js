@@ -1,5 +1,5 @@
 import Product from '../../models/Product.js'
-
+import { StatusCodes } from 'http-status-codes'
 export const getListProducts = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '' } = req.query
@@ -33,8 +33,8 @@ export const getListProducts = async (req, res) => {
       const variants = product.variants
         ?.filter((variant) => variant?.size?.name && variant?.color?.name)
         .map((variant) => ({
-          size: variant.size.name,
-          color: variant.color.name,
+          size: variant.size,
+          color: variant.color,
           stock: variant.stock,
           price: variant.price,
         }))
