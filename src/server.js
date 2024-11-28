@@ -24,7 +24,6 @@ const START_SERVER = () => {
   const LOCAL_DEV_APP_PORT = 8017
   const LOCAL_DEV_APP_HOST = 'localhost'
   app.listen(LOCAL_DEV_APP_PORT, LOCAL_DEV_APP_HOST, () => {
-    // eslint-disable-next-line no-console
     console.log(
       `Local DEV: Hello, Back-end Server is running successfully at Host: ${LOCAL_DEV_APP_HOST} and Port: ${LOCAL_DEV_APP_PORT}`
     )
@@ -33,11 +32,9 @@ const START_SERVER = () => {
 
 ;(async () => {
   try {
-    // eslint-disable-next-line no-console
     console.log('Starting Server...')
     START_SERVER()
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error)
     process.exit(0)
   }
