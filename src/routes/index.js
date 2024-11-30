@@ -14,6 +14,7 @@ import { blogAdminRoute } from './admin/blog.js'
 
 import { cartRoutes } from './user/cartRoute.js'
 import { categoryUserRoute } from './user/category.js'
+import { managerRoute } from './admin/manager.js'
 const Router = express.Router()
 
 Router.get('/status', (req, res) => {
@@ -26,6 +27,7 @@ Router.use('/admin/size', sizeAdminRoute)
 Router.use('/admin/color', colorAdminRoute)
 Router.use('/admin/category', categoryAdminRoute)
 Router.use('/admin/blog', blogAdminRoute)
+Router.use('/admin/manager', managerRoute)
 
 Router.use('/public', publicRoute)
 Router.use('/vnpay', vnpayRoute)

@@ -11,6 +11,7 @@ import {
   REFRESH_TOKEN_SECRET_SIGNATURE,
 } from '../../providers/JwtProvider.js'
 import { StatusCodes } from 'http-status-codes'
+import Permission from '../../models/Permission.js'
 
 dotenv.config()
 
@@ -135,6 +136,7 @@ export const refreshToken = async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
       permissions: permissions,
     }
 
@@ -149,5 +151,22 @@ export const refreshToken = async (req, res) => {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: 'Failed to refresh token!' })
+  }
+}
+
+export const getPermissionsList = async (req, res) => {
+  const { search = '' } = req.query
+
+  try {
+    const filter = search ? { name: { $regex: search, $options: 'i' } } : {}
+    const permissions = await Permission.find(filter)
+    const total = await Permission.countDocuments(filter)
+
+    res.json({
+      items: permissions,
+      total,
+    })
+  } catch {
+    res.status(500).json({ message: 'Server error' })
   }
 }
