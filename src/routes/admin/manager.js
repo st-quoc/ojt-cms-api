@@ -5,24 +5,41 @@ import {
 } from '../../middlewares/authMiddleware.js'
 import {
   changeManagerStatus,
-  create,
-  deleteManager,
-  list,
+  createManager,
+  listManager,
+  updateManager,
 } from '../../controllers/admin/managerController.js'
 
 const Router = express.Router()
 
-Router.route('/list').get(verifyAccessToken, requireRole(['admin']), list)
-Router.route('/create').post(verifyAccessToken, requireRole(['admin']), create)
-Router.route('/change_status/:managerId').put(
+Router.route('/list').get(
+  verifyAccessToken,
+  requireRole(['admin']),
+  listManager
+)
+
+Router.route('/detail/:id').get(
+  verifyAccessToken,
+  requireRole(['admin']),
+  updateManager
+)
+
+Router.route('/create').post(
+  verifyAccessToken,
+  requireRole(['admin']),
+  createManager
+)
+
+Router.route('/edit/:id').put(
+  verifyAccessToken,
+  requireRole(['admin']),
+  updateManager
+)
+
+Router.route('/change-status/:id').put(
   verifyAccessToken,
   requireRole(['admin']),
   changeManagerStatus
-)
-Router.route('/delete/:managerId').delete(
-  verifyAccessToken,
-  requireRole(['admin']),
-  deleteManager
 )
 
 export const managerRoute = Router

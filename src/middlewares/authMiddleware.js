@@ -53,9 +53,9 @@ export const requirePermission = (permission) => {
   }
 }
 
-export const requireRole = (role) => {
+export const requireRole = (roles) => {
   return (req, res, next) => {
-    if (!req.user?.role?.name?.includes(role)) {
+    if (!roles.includes(req.userInfo?.role)) {
       return res.status(403).json({ message: 'Access denied' })
     }
     next()

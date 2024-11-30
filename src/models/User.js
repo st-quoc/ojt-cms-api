@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ['admin', 'manager', 'user'], required: true },
     permissions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Permission' }],
     refreshToken: { type: String },
-    status: { type: String, default: 'active', enum: ['active', 'inactive'] },
+    phoneNumber: { type: String },
+    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   },
   { timestamps: true }
 )
