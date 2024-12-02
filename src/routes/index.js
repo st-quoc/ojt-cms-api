@@ -15,6 +15,8 @@ import { blogAdminRoute } from './admin/blog.js'
 import { cartRoutes } from './user/cartRoute.js'
 import { categoryUserRoute } from './user/category.js'
 import { managerRoute } from './admin/manager.js'
+import stripePaymentRoute from './stripe/payment.js'
+import stripeWebhookRoute from './stripe/webhook.js'
 const Router = express.Router()
 
 Router.get('/status', (req, res) => {
@@ -31,6 +33,8 @@ Router.use('/admin/manager', managerRoute)
 
 Router.use('/public', publicRoute)
 Router.use('/vnpay', vnpayRoute)
+Router.use('/stripe', stripePaymentRoute) // Route cho thanh toán
+Router.use('/stripe/webhook', stripeWebhookRoute) // Route cho webhook từ Stripe
 
 Router.use('/user/product', productUserRoute)
 Router.use('/cart', cartRoutes)
