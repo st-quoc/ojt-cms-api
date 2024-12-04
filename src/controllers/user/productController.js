@@ -104,10 +104,9 @@ export const getListProducts = async (req, res) => {
         const variants = product.variants
           ?.filter((variant) => variant?.size?.name && variant?.color?.name)
           .map((variant) => ({
-            size: variant.size.name,
-            color: variant.color.name,
-            sizeId: variant.size._id,
-            colorId: variant.color._id,
+            id: variant._id,
+            size: variant.size,
+            color: variant.color,
             stock: variant.stock,
             price: variant.price,
           }))

@@ -9,8 +9,8 @@ const CartSchema = new Schema({
       name: { type: String, required: true },
       price: { type: Number, required: true },
       quantity: { type: Number, required: true },
-      size: { type: String, required: true },
-      color: { type: String, required: true },
+      sizeId: { type: String, required: true },
+      colorId: { type: String, required: true },
     },
   ],
 })

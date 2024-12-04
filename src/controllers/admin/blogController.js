@@ -1,62 +1,169 @@
 import Blog from '../../models/Blog.js'
 
-export const adminCreateBlog = async (req, res) => {
+export const createBlog = async (req, res) => {
   try {
-    const { title, description, status, images } = req.body
+    const { thumbnail, title, sortDesc, fullDesc, status } = req.body
 
-    if (!title || !description) {
+    if (!thumbnail || !title || !sortDesc || !fullDesc) {
       return res.status(400).json({
-        success: false,
-        message: 'Title and Description are required.',
+        message:
+          'Missing required fields: thumbnail, title, sortDesc, or fullDesc',
       })
     }
 
     const newBlog = new Blog({
+      thumbnail,
       title,
-      description,
-      images: images || [],
-      status: status || 'Draft',
-      createdAt: new Date(),
+      sortDesc,
+      fullDesc,
+      status: status || 'draft',
     })
 
-    await newBlog.save()
+    const savedBlog = await newBlog.save()
 
-    return res.status(201).json({
-      success: true,
-      message: 'Blog created successfully.',
-      blog: newBlog,
+    res.status(201).json({
+      message: 'Blog created successfully',
+      blog: savedBlog,
     })
-  } catch (error) {
-    console.error('Error creating blog:', error)
-
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation Error.',
-        error: error.message,
-      })
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: 'Internal Server Error.',
-      error: error.message,
+  } catch {
+    res.status(500).json({
+      message: 'Error creating blog',
     })
   }
 }
 
 export const getAllBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find()
+    const { search = '', page = 1, limit = 10 } = req.query
+
+    const skip = (page - 1) * limit
+
+    const searchQuery = search
+      ? {
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { sortDesc: { $regex: search, $options: 'i' } },
+          ],
+        }
+      : {}
+
+    const blogs = await Blog.find(searchQuery)
+      .sort({ createdAt: -1 })
+      .skip(parseInt(skip))
+      .limit(parseInt(limit))
+
+    const total = await Blog.countDocuments(searchQuery)
+
     res.status(200).json({
       success: true,
-      data: blogs,
+      blogs: blogs,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+      },
     })
-  } catch (error) {
+  } catch {
     res.status(500).json({
       success: false,
-      message: 'Error retrieving blogs',
-      error: error.message,
+      message: 'Error fetching blogs',
     })
+  }
+}
+
+export const getDetailBlog = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const blog = await Blog.findById(id)
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: 'Blog not found',
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      blog: blog,
+    })
+  } catch {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching blog details',
+    })
+  }
+}
+
+export const updateBlog = async (req, res) => {
+  try {
+    const { id } = req.params
+    const updates = req.body
+
+    const blog = await Blog.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    )
+
+    if (!blog) {
+      return res.status(404).json({
+        message: 'Blog not found',
+      })
+    }
+
+    res.status(200).json({
+      message: 'Blog updated successfully',
+      blog: blog,
+    })
+  } catch {
+    res.status(500).json({
+      message: 'Error updating blog',
+    })
+  }
+}
+
+export const deleteBlog = async (req, res) => {
+  const { id } = req.params
+
+  try {
+    const blog = await Blog.findByIdAndDelete(id)
+
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog not found' })
+    }
+
+    res.status(200).json({ message: 'Blog deleted successfully' })
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting blog', error })
+  }
+}
+
+export const changeBlogStatus = async (req, res) => {
+  const { status } = req.body
+  const blogId = req.params.id
+
+  if (!status || !['draft', 'public'].includes(status)) {
+    return res.status(400).json({
+      message: 'Invalid status. Please select "active" or "inactive".',
+    })
+  }
+
+  try {
+    const blog = await Blog.findById(blogId)
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog does not exist.' })
+    }
+
+    blog.status = status
+
+    await blog.save()
+
+    res.status(200).json({
+      message: 'Manager status updated successfully!',
+    })
+  } catch (err) {
+    res.status(500).json({ message: 'Server error!', error: err.message })
   }
 }

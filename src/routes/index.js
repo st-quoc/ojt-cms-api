@@ -41,7 +41,7 @@ Router.use('/stripe', stripePaymentRoute) // Route cho thanh toán
 Router.use('/stripe/webhook', stripeWebhookRoute) // Route cho webhook từ Stripe
 
 Router.use('/user/product', productUserRoute)
-Router.use('/cart', cartRoutes)
+Router.use('/user/cart', cartRoutes)
 Router.use('/user/size', sizeUserRoute)
 Router.use('/user/color', colorUserRoute)
 Router.use('/user/category', categoryUserRoute)
