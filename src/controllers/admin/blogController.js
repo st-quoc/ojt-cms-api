@@ -48,7 +48,6 @@ export const adminCreateBlog = async (req, res) => {
 export const getAllBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find()
-    console.log(blogs)
     res.status(200).json({
       success: true,
       data: blogs,
