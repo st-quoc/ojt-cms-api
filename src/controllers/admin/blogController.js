@@ -141,27 +141,22 @@ export const deleteBlog = async (req, res) => {
 }
 
 export const changeBlogStatus = async (req, res) => {
-  const { status } = req.body
   const blogId = req.params.id
-
-  if (!status || !['draft', 'public'].includes(status)) {
-    return res.status(400).json({
-      message: 'Invalid status. Please select "active" or "inactive".',
-    })
-  }
 
   try {
     const blog = await Blog.findById(blogId)
+
     if (!blog) {
       return res.status(404).json({ message: 'Blog does not exist.' })
     }
 
-    blog.status = status
+    blog.status = blog.status === 'draft' ? 'public' : 'draft'
 
     await blog.save()
 
     res.status(200).json({
-      message: 'Manager status updated successfully!',
+      message: 'Blog status updated successfully!',
+      status: blog.status,
     })
   } catch (err) {
     res.status(500).json({ message: 'Server error!', error: err.message })

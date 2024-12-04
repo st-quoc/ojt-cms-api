@@ -4,6 +4,7 @@ import {
   getAllBlogs,
   getDetailBlog,
   deleteBlog,
+  changeBlogStatus,
 } from '../../controllers/admin/blogController.js'
 import { verifyAccessToken } from '../../middlewares/authMiddleware.js'
 
@@ -14,6 +15,6 @@ Router.route('/detail/:id').get(verifyAccessToken, getDetailBlog)
 Router.route('/edit/:id').put(verifyAccessToken, getDetailBlog)
 Router.route('/create').post(createBlog)
 Router.route('/delete/:id').delete(deleteBlog)
-Router.route('/change-status/:id').put(deleteBlog)
+Router.route('/change-status/:id').put(changeBlogStatus)
 
 export const blogAdminRoute = Router
