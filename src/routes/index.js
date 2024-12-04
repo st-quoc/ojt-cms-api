@@ -17,6 +17,8 @@ import { categoryUserRoute } from './user/category.js'
 import { managerRoute } from './admin/manager.js'
 import stripePaymentRoute from './stripe/payment.js'
 import stripeWebhookRoute from './stripe/webhook.js'
+import { userAdminRoute } from './admin/users.js'
+import { tierAdminRoute } from './admin/tier.js'
 const Router = express.Router()
 
 Router.get('/status', (req, res) => {
@@ -30,6 +32,8 @@ Router.use('/admin/color', colorAdminRoute)
 Router.use('/admin/category', categoryAdminRoute)
 Router.use('/admin/blog', blogAdminRoute)
 Router.use('/admin/manager', managerRoute)
+Router.use('/admin/user', userAdminRoute)
+Router.use('/admin/tier', tierAdminRoute)
 
 Router.use('/public', publicRoute)
 Router.use('/vnpay', vnpayRoute)

@@ -12,6 +12,7 @@ import {
 } from '../../providers/JwtProvider.js'
 import { StatusCodes } from 'http-status-codes'
 import Permission from '../../models/Permission.js'
+import { uploadImagesToCloudinary } from '../../ultils/upload.js'
 
 dotenv.config()
 
@@ -168,5 +169,46 @@ export const getPermissionsList = async (req, res) => {
     })
   } catch {
     res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export const getProfile = async (req, res) => {
+  const userId = req?.userInfo?.id
+  try {
+    const user = await User.findById(userId).select('-password')
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    res.status(200).json(user)
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message })
+  }
+}
+
+export const changeAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No files uploaded' })
+    }
+
+    const uploadedImageUrls = await uploadImagesToCloudinary([req.file])
+
+    const userId = req.userInfo.id
+
+    await User.findByIdAndUpdate(
+      userId,
+      { avatar: uploadedImageUrls[0] },
+      { new: true }
+    )
+
+    return res.status(200).json({
+      message: 'Avatar and other images updated successfully',
+    })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: 'Failed to update avatar', details: error.message })
   }
 }
