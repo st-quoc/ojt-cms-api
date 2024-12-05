@@ -55,6 +55,22 @@ export const adminGetListCategory = async (req, res) => {
   }
 }
 
+export const adminGetListCategoryWithoutPagination = async (req, res) => {
+  try {
+    const { search = '' } = req.query
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {}
+
+    const categories = await Category.find(query)
+
+    res.status(200).json({
+      total: categories.length,
+      categories,
+    })
+  } catch {
+    res.status(500).json({ message: 'Error fetching categories' })
+  }
+}
+
 export const adminDeleteCategory = async (req, res) => {
   try {
     const { id } = req.params
