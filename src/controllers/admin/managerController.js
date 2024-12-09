@@ -1,10 +1,7 @@
 import User from '../../models/User.js'
 import { StatusCodes } from 'http-status-codes'
 import bcrypt from 'bcryptjs'
-import {
-  managerCreationValidation,
-  managerUpdateValidation,
-} from '../../validators/authValidator.js'
+import { managerCreationValidation } from '../../validators/authValidator.js'
 import Permission from '../../models/Permission.js'
 
 export const listManager = async (req, res) => {
@@ -121,12 +118,6 @@ export const createManager = async (req, res) => {
 }
 
 export const updateManager = async (req, res) => {
-  const { error } = managerUpdateValidation(req.body)
-
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message })
-  }
-
   const { name, email, phoneNumber, status, permissions } = req.body
   const managerId = req.params.id
 
@@ -232,12 +223,8 @@ export const getManagerDetail = async (req, res) => {
     const managerId = req.params.id
 
     const manager = await User.findById(managerId).populate({
-      path: 'role',
-      match: { name: 'manager' },
-      populate: {
-        path: 'permissions',
-        select: 'name description',
-      },
+      path: 'permissions',
+      select: 'name description',
     })
 
     if (!manager) {
@@ -253,7 +240,8 @@ export const getManagerDetail = async (req, res) => {
         phoneNumber: manager.phoneNumber,
         status: manager.status,
         role: manager.role,
-        permissions: manager.role?.permissions || [],
+        permissions:
+          manager.permissions.map((permission) => permission._id) || [],
         createdAt: manager.createdAt,
         updatedAt: manager.updatedAt,
       },

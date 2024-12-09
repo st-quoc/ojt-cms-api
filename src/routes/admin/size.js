@@ -14,25 +14,25 @@ const Router = express.Router()
 
 Router.route('/list').get(
   verifyAccessToken,
-  requirePermission(['view_variant']),
+  requirePermission(['view_variant', 'view_product']),
   requireRole(['admin', 'manager']),
   adminGetListSize
 )
 Router.route('/create').post(
   verifyAccessToken,
-  requirePermission(['manager_variant']),
+  requirePermission(['manager_variant', 'manager_product']),
   requireRole(['admin', 'manager']),
   adminCreateSize
 )
 Router.route('/delete/:id').put(
   verifyAccessToken,
-  requirePermission(['manager_variant']),
+  requirePermission(['manager_variant', 'manager_product']),
   requireRole(['admin', 'manager']),
   adminUpdateSize
 )
 Router.route('/delete/:id').delete(
   verifyAccessToken,
-  requirePermission(['manager_variant']),
+  requirePermission(['manager_variant', 'manager_product']),
   requireRole(['admin', 'manager']),
   adminDeleteSize
 )
