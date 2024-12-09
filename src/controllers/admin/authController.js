@@ -13,6 +13,8 @@ import {
 import { StatusCodes } from 'http-status-codes'
 import Permission from '../../models/Permission.js'
 import { uploadImagesToCloudinary } from '../../ultils/upload.js'
+import nodemailer from 'nodemailer'
+import crypto from 'crypto'
 
 dotenv.config()
 
@@ -210,5 +212,92 @@ export const changeAvatar = async (req, res) => {
     return res
       .status(500)
       .json({ error: 'Failed to update avatar', details: error.message })
+  }
+}
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body
+
+  try {
+    // Tìm người dùng theo email
+    const user = await User.findOne({ email })
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Email không tồn tại!' })
+    }
+
+    // Tạo resetToken và set thời gian hết hạn
+    const resetToken = crypto.randomBytes(32).toString('hex')
+    const resetTokenExpiration = Date.now() + 3600000 // Token hết hạn sau 1 giờ
+
+    // Cập nhật token vào cơ sở dữ liệu
+    user.resetToken = resetToken
+    user.resetTokenExpiration = resetTokenExpiration
+    await user.save()
+
+    // Gửi email với reset link
+    const resetLink = `${process.env.FRONTEND_URL}/v1/auth/reset-password?token=${resetToken}`
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    })
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Reset mật khẩu của bạn',
+      text: `Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng click vào liên kết sau để đặt lại mật khẩu: ${resetLink}`,
+    }
+
+    await transporter.sendMail(mailOptions)
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: 'Email reset password đã được gửi!' })
+  } catch (error) {
+    console.error(error)
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Có lỗi xảy ra!' })
+  }
+}
+
+export const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body
+
+  try {
+    // Tìm người dùng theo resetToken
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiration: { $gt: Date.now() }, // Kiểm tra token còn hạn không
+    })
+
+    if (!user) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'Token không hợp lệ hoặc đã hết hạn!' })
+    }
+
+    // Hash mật khẩu mới
+    const hashedPassword = await bcrypt.hash(newPassword, 12)
+
+    // Cập nhật mật khẩu và xoá token
+    user.password = hashedPassword
+    user.resetToken = null
+    user.resetTokenExpiration = null
+    await user.save()
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: 'Mật khẩu đã được thay đổi thành công!' })
+  } catch (error) {
+    console.error(error)
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Có lỗi xảy ra!' })
   }
 }
