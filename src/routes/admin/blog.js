@@ -5,6 +5,7 @@ import {
   getDetailBlog,
   deleteBlog,
   changeBlogStatus,
+  updateBlog,
 } from '../../controllers/admin/blogController.js'
 import {
   requirePermission,
@@ -30,7 +31,7 @@ Router.route('/edit/:id').put(
   verifyAccessToken,
   requireRole(['admin', 'manager']),
   requirePermission(['manager_blog']),
-  getDetailBlog
+  updateBlog
 )
 Router.route('/create').post(
   verifyAccessToken,
@@ -48,7 +49,7 @@ Router.route('/change-status/:id').put(
   verifyAccessToken,
   requireRole(['admin', 'manager']),
   requirePermission(['manager_blog']),
-  deleteBlog
+  changeBlogStatus
 )
 
 export const blogAdminRoute = Router
