@@ -7,6 +7,7 @@ import {
 import {
   changeManagerStatus,
   createManager,
+  getManagerDetail,
   listManager,
   updateManager,
 } from '../../controllers/admin/managerController.js'
@@ -24,7 +25,7 @@ Router.route('/detail/:id').get(
   verifyAccessToken,
   requireRole(['admin', 'manager']),
   requirePermission(['view_manager', 'manager_manager']),
-  updateManager
+  getManagerDetail
 )
 
 Router.route('/create').post(

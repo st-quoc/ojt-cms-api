@@ -45,4 +45,5 @@ Router.use('/user/cart', cartRoutes)
 Router.use('/user/size', sizeUserRoute)
 Router.use('/user/color', colorUserRoute)
 Router.use('/user/category', categoryUserRoute)
+Router.use('/user/blog', categoryUserRoute)
 export const APIs_V1 = Router

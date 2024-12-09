@@ -161,7 +161,15 @@ export const getPermissionsList = async (req, res) => {
   const { search = '' } = req.query
 
   try {
-    const filter = search ? { name: { $regex: search, $options: 'i' } } : {}
+    const filter = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+          ],
+        }
+      : {}
+
     const permissions = await Permission.find(filter)
     const total = await Permission.countDocuments(filter)
 
