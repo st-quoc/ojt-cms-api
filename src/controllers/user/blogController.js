@@ -1,21 +1,19 @@
 import Blog from '../../models/Blog'
 
 export const list = async (req, res) => {
-  const { status, search = '', page = 1, limit = 10 } = req.query
+  const { search = '', page = 1, limit = 10 } = req.query
 
   try {
-    const filter = search
-      ? {
-          $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { sortDesc: { $regex: search, $options: 'i' } },
-            { fullDesc: { $regex: search, $options: 'i' } },
-          ],
-        }
-      : {}
+    const filter = {
+      status: 'public',
+    }
 
-    if (status) {
-      filter.status = status
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { sortDesc: { $regex: search, $options: 'i' } },
+        { fullDesc: { $regex: search, $options: 'i' } },
+      ]
     }
 
     const skip = (page - 1) * limit
@@ -41,10 +39,10 @@ export const detail = async (req, res) => {
   const { id } = req.params
 
   try {
-    const blog = await Blog.findById(id)
+    const blog = await Blog.findOne({ _id: id, status: 'public' })
 
     if (!blog) {
-      return res.status(404).json({ message: 'Blog not found' })
+      return res.status(404).json({ message: 'Blog not found or not public' })
     }
 
     res.json(blog)
