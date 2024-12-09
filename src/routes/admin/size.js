@@ -1,5 +1,9 @@
 import express from 'express'
-import { verifyAccessToken } from '../../middlewares/authMiddleware.js'
+import {
+  requirePermission,
+  requireRole,
+  verifyAccessToken,
+} from '../../middlewares/authMiddleware.js'
 import {
   adminCreateSize,
   adminDeleteSize,
@@ -8,9 +12,29 @@ import {
 } from '../../controllers/admin/sizeController.js'
 const Router = express.Router()
 
-Router.route('/list').get(verifyAccessToken, adminGetListSize)
-Router.route('/create').post(verifyAccessToken, adminCreateSize)
-Router.route('/delete/:id').put(verifyAccessToken, adminUpdateSize)
-Router.route('/delete/:id').delete(verifyAccessToken, adminDeleteSize)
+Router.route('/list').get(
+  verifyAccessToken,
+  requirePermission(['view_variant']),
+  requireRole(['admin', 'manager']),
+  adminGetListSize
+)
+Router.route('/create').post(
+  verifyAccessToken,
+  requirePermission(['manager_variant']),
+  requireRole(['admin', 'manager']),
+  adminCreateSize
+)
+Router.route('/delete/:id').put(
+  verifyAccessToken,
+  requirePermission(['manager_variant']),
+  requireRole(['admin', 'manager']),
+  adminUpdateSize
+)
+Router.route('/delete/:id').delete(
+  verifyAccessToken,
+  requirePermission(['manager_variant']),
+  requireRole(['admin', 'manager']),
+  adminDeleteSize
+)
 
 export const sizeAdminRoute = Router

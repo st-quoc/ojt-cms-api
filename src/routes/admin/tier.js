@@ -1,5 +1,9 @@
 import express from 'express'
-import { verifyAccessToken } from '../../middlewares/authMiddleware.js'
+import {
+  requirePermission,
+  requireRole,
+  verifyAccessToken,
+} from '../../middlewares/authMiddleware.js'
 import {
   adminCreateTier,
   adminDeleteTier,
@@ -9,10 +13,35 @@ import {
 } from '../../controllers/admin/tierController.js'
 const Router = express.Router()
 
-Router.route('/list').get(verifyAccessToken, adminGetListTier)
-Router.route('/create').post(verifyAccessToken, adminCreateTier)
-Router.route('/detail/:id').get(verifyAccessToken, adminGetTierById)
-Router.route('/update/:id').put(verifyAccessToken, adminUpdateTier)
-Router.route('/delete/:id').delete(verifyAccessToken, adminDeleteTier)
+Router.route('/list').get(
+  verifyAccessToken,
+  requirePermission(['view_tier', 'manager_tier']),
+  requireRole(['admin', 'manager']),
+  adminGetListTier
+)
+Router.route('/detail/:id').get(
+  verifyAccessToken,
+  requirePermission(['view_tier', 'manager_tier']),
+  requireRole(['admin', 'manager']),
+  adminGetTierById
+)
+Router.route('/create').post(
+  verifyAccessToken,
+  requirePermission(['manager_tier']),
+  requireRole(['admin', 'manager']),
+  adminCreateTier
+)
+Router.route('/update/:id').put(
+  verifyAccessToken,
+  requirePermission(['manager_tier']),
+  requireRole(['admin', 'manager']),
+  adminUpdateTier
+)
+Router.route('/delete/:id').delete(
+  verifyAccessToken,
+  requirePermission(['manager_tier']),
+  requireRole(['admin', 'manager']),
+  adminDeleteTier
+)
 
 export const tierAdminRoute = Router

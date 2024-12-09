@@ -10,32 +10,38 @@ dotenv.config()
 export const seedDatabase = async () => {
   try {
     const permissions = [
-      { name: 'create_user', desc: 'Allows creating a new user.' },
-      { name: 'delete_user', desc: 'Allows deleting a user.' },
-      { name: 'update_user', desc: 'Allows updating user details.' },
-      { name: 'view_user', desc: 'Allows viewing user details.' },
+      {
+        name: 'manager_product',
+        desc: 'Allows View/Create/Edit/Delete Product.',
+      },
+      { name: 'view_product', desc: 'Allows Only View Product Details.' },
 
-      { name: 'create_product', desc: 'Allows creating a new product.' },
-      { name: 'delete_product', desc: 'Allows deleting a product.' },
-      { name: 'update_product', desc: 'Allows updating product details.' },
-      { name: 'view_product', desc: 'Allows viewing product details.' },
+      {
+        name: 'manager_variant',
+        desc: 'Allows View/Create/Edit/Delete Variant.',
+      },
+      { name: 'view_variant', desc: 'Allows Only View Variant Details.' },
 
-      { name: 'create_blog', desc: 'Allows creating a new blog.' },
-      { name: 'delete_blog', desc: 'Allows deleting a blog.' },
-      { name: 'update_blog', desc: 'Allows updating blog details.' },
-      { name: 'view_blog', desc: 'Allows viewing blog details.' },
+      { name: 'manager_tier', desc: 'Allows View/Create/Edit/Delete Tier.' },
+      { name: 'view_tier', desc: 'Allows Only View Tier Details.' },
 
-      { name: 'create_order', desc: 'Allows creating a new order.' },
-      { name: 'delete_order', desc: 'Allows deleting an order.' },
-      { name: 'update_order', desc: 'Allows updating order details.' },
-      { name: 'view_order', desc: 'Allows viewing order details.' },
+      { name: 'manager_blog', desc: 'Allows View/Create/Edit/Delete Blog.' },
+      { name: 'view_blog', desc: 'Allows Only View Blog Details.' },
 
-      { name: 'create_activity', desc: 'Allows creating a new activity.' },
-      { name: 'delete_activity', desc: 'Allows deleting an activity.' },
-      { name: 'update_activity', desc: 'Allows updating activity details.' },
-      { name: 'view_activity', desc: 'Allows viewing activity details.' },
+      {
+        name: 'manager_manager',
+        desc: 'Allows View/Create/Edit/Delete Manager.',
+      },
+      { name: 'view_manager', desc: 'Allows Only View Manager Details.' },
 
-      { name: 'view_variants', desc: 'Allows viewing variants details.' },
+      {
+        name: 'manager_user',
+        desc: 'Allows View/Create/Edit/Delete User.',
+      },
+      { name: 'view_user', desc: 'Allows Only View User Details.' },
+
+      { name: 'manager_order', desc: 'Allows View/Create/Edit/Delete Order.' },
+      { name: 'view_order', desc: 'Allows Only View Order Details.' },
     ]
 
     await Promise.all(

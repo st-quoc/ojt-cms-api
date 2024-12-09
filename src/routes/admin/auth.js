@@ -6,6 +6,8 @@ import {
   getPermissionsList,
   getProfile,
   changeAvatar,
+  changePassword,
+  changeProfile,
 } from '../../controllers/admin/authController.js'
 import {
   verifyAccessToken,
@@ -21,6 +23,8 @@ Router.route('/register').post(register)
 Router.route('/login').post(login)
 Router.route('/refresh-token').put(refreshToken)
 Router.route('/profile').get(verifyAccessToken, getProfile)
+Router.route('/change-password').post(verifyAccessToken, changePassword)
+Router.route('/change-profile').post(verifyAccessToken, changeProfile)
 Router.route('/avatar').post(
   verifyAccessToken,
   upload.single('avatar'),

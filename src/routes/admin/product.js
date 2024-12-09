@@ -1,6 +1,7 @@
 import express from 'express'
 import {
   requirePermission,
+  requireRole,
   verifyAccessToken,
 } from '../../middlewares/authMiddleware.js'
 import {
@@ -14,31 +15,36 @@ const Router = express.Router()
 
 Router.route('/list').get(
   verifyAccessToken,
-  requirePermission('create_product'),
+  requirePermission(['view_product', 'manager_product']),
+  requireRole(['admin', 'manager']),
   adminGetListProduct
 )
 
 Router.route('/detail/:id').get(
   verifyAccessToken,
-  requirePermission('create_product'),
+  requirePermission(['view_product', 'manager_product']),
+  requireRole(['admin', 'manager']),
   adminGetProductDetail
 )
 
 Router.route('/create').post(
   verifyAccessToken,
-  requirePermission('create_product'),
+  requirePermission(['manager_product']),
+  requireRole(['admin', 'manager']),
   adminCreateProduct
 )
 
 Router.route('/delete/:id').delete(
   verifyAccessToken,
-  requirePermission('create_product'),
+  requirePermission(['manager_product']),
+  requireRole(['admin', 'manager']),
   adminDeleteProduct
 )
 
 Router.route('/edit/:id').put(
   verifyAccessToken,
-  requirePermission('create_product'),
+  requirePermission(['manager_product']),
+  requireRole(['admin', 'manager']),
   adminEditProduct
 )
 

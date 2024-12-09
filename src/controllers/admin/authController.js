@@ -212,3 +212,57 @@ export const changeAvatar = async (req, res) => {
       .json({ error: 'Failed to update avatar', details: error.message })
   }
 }
+
+export const changePassword = async (req, res) => {
+  const { username, oldPassword, newPassword } = req.body
+
+  try {
+    if (!username || !oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    const user = await User.findOne({ username })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password)
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Old password is incorrect' })
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    return res.status(200).json({ message: 'Password changed successfully' })
+  } catch {
+    return res.status(500).json({ message: 'Internal server error' })
+  }
+}
+
+export const changeProfile = async (req, res) => {
+  const { username, oldPassword, newPassword } = req.body
+
+  try {
+    if (!username || !oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    const user = await User.findOne({ username })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password)
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Old password is incorrect' })
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    return res.status(200).json({ message: 'Password changed successfully' })
+  } catch {
+    return res.status(500).json({ message: 'Internal server error' })
+  }
+}
