@@ -19,6 +19,7 @@ import stripePaymentRoute from './stripe/payment.js'
 import stripeWebhookRoute from './stripe/webhook.js'
 import { userAdminRoute } from './admin/users.js'
 import { tierAdminRoute } from './admin/tier.js'
+import { blogUserRoute } from './user/blogRoute.js'
 const Router = express.Router()
 
 Router.get('/status', (req, res) => {
@@ -45,5 +46,6 @@ Router.use('/user/cart', cartRoutes)
 Router.use('/user/size', sizeUserRoute)
 Router.use('/user/color', colorUserRoute)
 Router.use('/user/category', categoryUserRoute)
-Router.use('/user/blog', categoryUserRoute)
+Router.use('/user/blog', blogUserRoute)
+
 export const APIs_V1 = Router

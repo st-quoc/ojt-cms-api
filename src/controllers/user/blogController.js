@@ -1,4 +1,4 @@
-import Blog from '../../models/Blog'
+import Blog from '../../models/Blog.js'
 
 export const list = async (req, res) => {
   const { search = '', page = 1, limit = 10 } = req.query

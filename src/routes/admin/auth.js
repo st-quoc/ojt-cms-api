@@ -21,8 +21,6 @@ const upload = multer({ storage: storage })
 
 Router.route('/register').post(register)
 Router.route('/login').post(login)
-Router.route('/forgot-password').post(forgotPassword)
-Router.route('/reset-password').post(resetPassword)
 Router.route('/refresh-token').put(refreshToken)
 Router.route('/profile').get(verifyAccessToken, getProfile)
 Router.route('/change-password').post(verifyAccessToken, changePassword)
