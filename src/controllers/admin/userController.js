@@ -8,7 +8,7 @@ import {
 
 export const listUsers = async (req, res) => {
   try {
-    const { search, tier, page = 1, limit = 10 } = req.query
+    const { search, page = 1, limit = 10 } = req.query
 
     const filter = { role: 'user' }
 

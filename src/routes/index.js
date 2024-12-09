@@ -37,8 +37,8 @@ Router.use('/admin/tier', tierAdminRoute)
 
 Router.use('/public', publicRoute)
 Router.use('/vnpay', vnpayRoute)
-Router.use('/stripe', stripePaymentRoute) // Route cho thanh toán
-Router.use('/stripe/webhook', stripeWebhookRoute) // Route cho webhook từ Stripe
+Router.use('/stripe', stripePaymentRoute)
+Router.use('/stripe/webhook', stripeWebhookRoute)
 
 Router.use('/user/product', productUserRoute)
 Router.use('/user/cart', cartRoutes)

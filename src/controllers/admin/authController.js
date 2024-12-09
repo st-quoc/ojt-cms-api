@@ -215,89 +215,71 @@ export const changeAvatar = async (req, res) => {
   }
 }
 
-export const forgotPassword = async (req, res) => {
-  const { email } = req.body
+export const changePassword = async (req, res) => {
+  const { username, oldPassword, newPassword } = req.body
 
   try {
-    // Tìm người dùng theo email
-    const user = await User.findOne({ email })
-    if (!user) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: 'Email không tồn tại!' })
+    if (!username || !oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' })
     }
 
-    // Tạo resetToken và set thời gian hết hạn
-    const resetToken = crypto.randomBytes(32).toString('hex')
-    const resetTokenExpiration = Date.now() + 3600000 // Token hết hạn sau 1 giờ
+    const user = await User.findOne({ username })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
 
-    // Cập nhật token vào cơ sở dữ liệu
-    user.resetToken = resetToken
-    user.resetTokenExpiration = resetTokenExpiration
+    const isMatch = await bcrypt.compare(oldPassword, user.password)
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Old password is incorrect' })
+    }
+
+    user.password = newPassword
     await user.save()
 
-    // Gửi email với reset link
-    const resetLink = `${process.env.FRONTEND_URL}/v1/auth/reset-password?token=${resetToken}`
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    })
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: 'Reset mật khẩu của bạn',
-      text: `Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng click vào liên kết sau để đặt lại mật khẩu: ${resetLink}`,
-    }
-
-    await transporter.sendMail(mailOptions)
-
-    res
-      .status(StatusCodes.OK)
-      .json({ message: 'Email reset password đã được gửi!' })
-  } catch (error) {
-    console.error(error)
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: 'Có lỗi xảy ra!' })
+    return res.status(200).json({ message: 'Password changed successfully' })
+  } catch {
+    return res.status(500).json({ message: 'Internal server error' })
   }
 }
 
-export const resetPassword = async (req, res) => {
-  const { token, newPassword } = req.body
+export const changeProfile = async (req, res) => {
+  const { id } = req.userInfo
+  const { name, email, address, phone, avatar } = req.body
 
   try {
-    // Tìm người dùng theo resetToken
-    const user = await User.findOne({
-      resetToken: token,
-      resetTokenExpiration: { $gt: Date.now() }, // Kiểm tra token còn hạn không
-    })
-
+    const user = await User.findById(id)
     if (!user) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Token không hợp lệ hoặc đã hết hạn!' })
+      return res.status(404).json({ message: 'User not found' })
     }
 
-    // Hash mật khẩu mới
-    const hashedPassword = await bcrypt.hash(newPassword, 12)
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email })
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email is already taken' })
+      }
+    }
 
-    // Cập nhật mật khẩu và xoá token
-    user.password = hashedPassword
-    user.resetToken = null
-    user.resetTokenExpiration = null
+    user.name = name || user.name
+    user.email = email || user.email
+    user.address = address || user.address
+    user.phone = phone || user.phone
+    user.avatar = avatar || user.avatar
+
     await user.save()
 
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        name: user.name,
+        email: user.email,
+        address: user.address,
+        phone: user.phone,
+        avatar: user.avatar,
+      },
+    })
+  } catch {
     res
-      .status(StatusCodes.OK)
-      .json({ message: 'Mật khẩu đã được thay đổi thành công!' })
-  } catch (error) {
-    console.error(error)
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: 'Có lỗi xảy ra!' })
+      .status(500)
+      .json({ message: 'An error occurred while updating profile' })
   }
 }
