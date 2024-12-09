@@ -241,28 +241,43 @@ export const changePassword = async (req, res) => {
 }
 
 export const changeProfile = async (req, res) => {
-  const { username, oldPassword, newPassword } = req.body
+  const { id } = req.userInfo
+  const { name, email, address, phone, avatar } = req.body
 
   try {
-    if (!username || !oldPassword || !newPassword) {
-      return res.status(400).json({ message: 'All fields are required' })
-    }
-
-    const user = await User.findOne({ username })
+    const user = await User.findById(id)
     if (!user) {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    const isMatch = await bcrypt.compare(oldPassword, user.password)
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Old password is incorrect' })
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email })
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email is already taken' })
+      }
     }
 
-    user.password = newPassword
+    user.name = name || user.name
+    user.email = email || user.email
+    user.address = address || user.address
+    user.phone = phone || user.phone
+    user.avatar = avatar || user.avatar
+
     await user.save()
 
-    return res.status(200).json({ message: 'Password changed successfully' })
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        name: user.name,
+        email: user.email,
+        address: user.address,
+        phone: user.phone,
+        avatar: user.avatar,
+      },
+    })
   } catch {
-    return res.status(500).json({ message: 'Internal server error' })
+    res
+      .status(500)
+      .json({ message: 'An error occurred while updating profile' })
   }
 }
