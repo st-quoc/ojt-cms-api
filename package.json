@@ -8,6 +8,7 @@
   },
   "type": "module",
   "scripts": {
+    "start": "node src/server.js",
     "lint": "eslint src --ext js --report-unused-disable-directives --max-warnings 0",
     "clean": "rm -rf build && mkdir public",
     "build-babel": "babel ./src -d ./public/src",
