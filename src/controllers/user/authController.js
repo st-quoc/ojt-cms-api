@@ -6,7 +6,6 @@ import {
   REFRESH_TOKEN_SECRET_SIGNATURE,
 } from '../../providers/JwtProvider.js'
 import bcrypt from 'bcryptjs'
-import nodemailer from 'nodemailer'
 import Cart from '../../models/Cart.js'
 
 export const register = async (req, res) => {
@@ -32,7 +31,7 @@ export const register = async (req, res) => {
       name,
       email,
       phoneNumber,
-      status: 'inactive',
+      status: 'active',
       role: 'user',
       password: hashedPassword,
     })
