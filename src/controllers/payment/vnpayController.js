@@ -20,34 +20,44 @@ const vnpay = new VNPay({
 
 export const createPaymentUrl = async (req, res) => {
   try {
-    const { userId, shippingAddress } = req.body
+    const { userId, shippingAddress, phoneNumber, shippingFee } = req.body
 
-    if (!userId || !shippingAddress) {
+    if (!userId || !shippingAddress || !phoneNumber || !shippingFee) {
       return res
         .status(400)
-        .json({ message: 'Vui lòng cung cấp userId và địa chỉ giao hàng.' })
+        .json({ message: 'Plesase provice address and phone number !' })
     }
 
     const userCart = await Cart.findOne({ userId })
     if (!userCart || userCart.items.length === 0) {
-      return res
-        .status(400)
-        .json({ message: 'Giỏ hàng trống hoặc không tìm thấy giỏ hàng.' })
+      return res.status(400).json({ message: 'Cart not found !.' })
     }
 
-    const totalPrice = userCart.items.reduce((total, item) => {
-      return total + item.price * item.quantity
-    }, 0)
+    const totalPrice =
+      userCart.items.reduce((total, item) => {
+        return total + item.price * item.quantity
+      }, 0) + shippingFee
+
     console.log(totalPrice)
+
     const productDetails = userCart.items.map((item) => ({
       product: item.productId,
       quantity: item.quantity,
     }))
 
+    let shippingMethod = ''
+    if (shippingFee == 55000) {
+      shippingMethod = 'Fast delivery'
+    } else {
+      shippingMethod = 'Standard delivery'
+    }
+
     const newOrder = new Order({
       user: userId,
       products: productDetails,
       totalPrice,
+      phoneNumber,
+      shippingMethod,
       paymentMethod: 'vnpay',
       paymentStatus: 'pending',
       shippingAddress,
@@ -99,14 +109,14 @@ export const handleVnpayReturn = async (req, res) => {
           }
         }
 
-        res.redirect('http://localhost:5173/cart?success')
+        res.redirect('http://localhost:5173/order?success')
       } else {
         await Order.findByIdAndUpdate(query.vnp_TxnRef, {
           paymentStatus: 'failed',
           vnpayResponseCode: query.vnp_ResponseCode,
         })
 
-        res.redirect('http://localhost:5173/cart?payment-fail')
+        res.redirect('http://localhost:5173/order?payment-fail')
       }
     } else {
       res.status(400).send('Dữ liệu trả về không hợp lệ.')

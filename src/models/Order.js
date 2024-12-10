@@ -47,6 +47,14 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    phoneNumber: {
+      type: String,
+      required: true,
+    },
+    shippingMethod: {
+      type: String,
+      required: true,
+    },
     orderStatus: {
       type: String,
       enum: ['processing', 'shipped', 'delivered', 'cancelled'],

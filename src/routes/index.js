@@ -8,6 +8,7 @@ import { sizeAdminRoute } from './admin/size.js'
 import { colorAdminRoute } from './admin/color.js'
 import { sizeUserRoute } from './user/size.js'
 import { colorUserRoute } from './user/color.js'
+import { orderUserRoute } from './user/orderRoute.js'
 import { categoryAdminRoute } from './admin/category.js'
 import { productUserRoute } from './user/product.js'
 import { blogAdminRoute } from './admin/blog.js'
@@ -46,6 +47,7 @@ Router.use('/user/product', productUserRoute)
 Router.use('/user/cart', cartRoutes)
 Router.use('/user/size', sizeUserRoute)
 Router.use('/user/color', colorUserRoute)
+Router.use('/user/order', orderUserRoute)
 Router.use('/user/category', categoryUserRoute)
 Router.use('/user/blog', blogUserRoute)
 Router.use('/user', userRoute)
