@@ -42,7 +42,7 @@ Router.route('/avatar').post(
 
 Router.route('/permissions/list').get(
   verifyAccessToken,
-  requireRole(['admin']),
+  requireRole(['admin', 'manager']),
   getPermissionsList
 )
 
