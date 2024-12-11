@@ -109,14 +109,14 @@ export const handleVnpayReturn = async (req, res) => {
           }
         }
 
-        res.redirect('http://localhost:5173/order?success')
+        res.redirect('https://ojt-cms-web.vercel.app/order?success')
       } else {
         await Order.findByIdAndUpdate(query.vnp_TxnRef, {
           paymentStatus: 'failed',
           vnpayResponseCode: query.vnp_ResponseCode,
         })
 
-        res.redirect('http://localhost:5173/order?payment-fail')
+        res.redirect('https://ojt-cms-web.vercel.app/order?payment-fail')
       }
     } else {
       res.status(400).send('Dữ liệu trả về không hợp lệ.')
