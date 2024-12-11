@@ -43,13 +43,13 @@ export const listManager = async (req, res) => {
 
     const totalManagers = await User.countDocuments({
       ...filter,
-      'role.name': 'manager',
+      role: 'manager',
     })
 
     const filteredManagers = managers.filter((manager) => manager.role)
 
     res.status(StatusCodes.OK).json({
-      total: filteredManagers.length,
+      total: totalManagers,
       totalPages: Math.ceil(totalManagers / pageSize),
       currentPage: pageNumber,
       managers: filteredManagers,

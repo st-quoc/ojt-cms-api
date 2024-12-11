@@ -1,14 +1,11 @@
 import User from '../../models/User.js'
 import { StatusCodes } from 'http-status-codes'
 import bcrypt from 'bcryptjs'
-import {
-  managerCreationValidation,
-  managerUpdateValidation,
-} from '../../validators/authValidator.js'
+import { managerCreationValidation } from '../../validators/authValidator.js'
 
 export const listUsers = async (req, res) => {
   try {
-    const { search, page = 1, limit = 10 } = req.query
+    const { page = 1, limit = 10, search = '' } = req.query
 
     const filter = { role: 'user' }
 
@@ -40,13 +37,13 @@ export const listUsers = async (req, res) => {
 
     const totalUsers = await User.countDocuments({
       ...filter,
-      'role.name': 'user',
+      role: 'user',
     })
 
     const filteredUsers = users.filter((manager) => manager.role)
 
     res.status(StatusCodes.OK).json({
-      total: filteredUsers.length,
+      total: totalUsers,
       totalPages: Math.ceil(totalUsers / pageSize),
       currentPage: pageNumber,
       users: filteredUsers,
