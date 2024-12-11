@@ -8,6 +8,7 @@ import {
 import {
   changeUserStatus,
   createUser,
+  deleteUser,
   getUserDetail,
   listUsers,
   updateUser,
@@ -41,6 +42,13 @@ Router.route('/edit/:id').put(
   requirePermission(['manager_user']),
   requireRole(['admin']),
   updateUser
+)
+
+Router.route('/delete/:id').delete(
+  verifyAccessToken,
+  requirePermission(['manager_user']),
+  requireRole(['admin']),
+  deleteUser
 )
 
 Router.route('/change-status/:id').put(

@@ -105,14 +105,9 @@ export const createUser = async (req, res) => {
 }
 
 export const updateUser = async (req, res) => {
-  const { error } = managerUpdateValidation(req.body)
-
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message })
-  }
-
-  const { name, email, phoneNumber, status, permissions } = req.body
+  const { name, email, phoneNumber, status } = req.body
   const managerId = req.params.id
+  console.log('🚀  managerId  🚀', managerId)
 
   try {
     const manager = await User.findById(managerId)
@@ -124,7 +119,6 @@ export const updateUser = async (req, res) => {
     manager.email = email || manager.email
     manager.phoneNumber = phoneNumber || manager.phoneNumber
     manager.status = status || manager.status
-    manager.permissions = permissions || manager.permissions
 
     await manager.save()
 
@@ -181,33 +175,20 @@ export const changeUserStatus = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const { managerId } = req.params
+    const userId = req.params.id
 
-    if (!managerId) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: 'Manager ID is required.',
-      })
+    const user = await User.findOneAndDelete({
+      _id: userId,
+      role: 'user',
+    })
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
     }
 
-    const manager = await User.findOneAndDelete({
-      _id: managerId,
-      role: await Role.findOne({ name: 'manager' })._id,
-    })
-
-    if (!manager) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: 'Manager not found.',
-      })
-    }
-
-    res.status(StatusCodes.OK).json({
-      message: 'Manager deleted successfully.',
-    })
-  } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Error deleting manager.',
-      error: error.message,
-    })
+    return res.status(200).json({ message: 'User deleted successfully' })
+  } catch {
+    return res.status(500).json({ message: 'Internal server error' })
   }
 }
 
