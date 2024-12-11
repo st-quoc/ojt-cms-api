@@ -407,3 +407,34 @@ export const resetPassword = async (req, res) => {
       .json({ message: 'An error occurred while processing the request' })
   }
 }
+
+export const resetPasswordForUser = async (req, res) => {
+  try {
+    const { userId, newPassword } = req.body
+
+    if (!req.userInfo || req.userInfo.role !== 'admin') {
+      return res
+        .status(StatusCodes.FORBIDDEN)
+        .json({ message: 'Access denied' })
+    }
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'User not found' })
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    user.password = hashedPassword
+    await user.save()
+
+    res.status(StatusCodes.OK).json({ message: 'Password reset successfully' })
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Error resetting password',
+      error: error.message,
+    })
+  }
+}

@@ -10,6 +10,7 @@ import {
   changeProfile,
   forgotPassword,
   resetPassword,
+  resetPasswordForUser,
 } from '../../controllers/admin/authController.js'
 import {
   verifyAccessToken,
@@ -29,6 +30,10 @@ Router.route('/change-password').post(verifyAccessToken, changePassword)
 Router.route('/change-profile').post(verifyAccessToken, changeProfile)
 Router.route('/forgot-password').post(verifyAccessToken, forgotPassword)
 Router.route('/reset-password/:token').post(resetPassword)
+Router.route('/reset-pass-for-user').post(
+  verifyAccessToken,
+  resetPasswordForUser
+)
 Router.route('/avatar').post(
   verifyAccessToken,
   upload.single('avatar'),
