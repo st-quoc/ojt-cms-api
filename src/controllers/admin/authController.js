@@ -13,8 +13,8 @@ import {
 import { StatusCodes } from 'http-status-codes'
 import Permission from '../../models/Permission.js'
 import { uploadImagesToCloudinary } from '../../ultils/upload.js'
-import nodemailer from 'nodemailer'
 import crypto from 'crypto'
+import nodemailer from 'nodemailer'
 
 dotenv.config()
 
@@ -224,14 +224,14 @@ export const changeAvatar = async (req, res) => {
 }
 
 export const changePassword = async (req, res) => {
-  const { username, oldPassword, newPassword } = req.body
+  const { email, oldPassword, newPassword } = req.body
 
   try {
-    if (!username || !oldPassword || !newPassword) {
+    if (!email || !oldPassword || !newPassword) {
       return res.status(400).json({ message: 'All fields are required' })
     }
 
-    const user = await User.findOne({ username })
+    const user = await User.findOne({ email })
     if (!user) {
       return res.status(404).json({ message: 'User not found' })
     }
@@ -241,7 +241,9 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'Old password is incorrect' })
     }
 
-    user.password = newPassword
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    user.password = hashedPassword
     await user.save()
 
     return res.status(200).json({ message: 'Password changed successfully' })
@@ -289,5 +291,112 @@ export const changeProfile = async (req, res) => {
     res
       .status(500)
       .json({ message: 'An error occurred while updating profile' })
+  }
+}
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+    const { id } = req.userInfo
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' })
+    }
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (user.status !== 'active') {
+      return res
+        .status(400)
+        .json({ message: 'Inactive user cannot reset password' })
+    }
+
+    if (id) {
+      const auth = await User.findById(id)
+      if (!auth) {
+        return res.status(403).json({ message: 'Unauthorized request' })
+      }
+
+      if (auth.id !== user.id) {
+        return res
+          .status(403)
+          .json({ message: 'Mismatch between user and token' })
+      }
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex')
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex')
+
+    user.resetPassword = {
+      token: hashedToken,
+      expiresAt: Date.now() + 3600000,
+    }
+    await user.save()
+
+    const resetLink = `${process.env.FE_HOST}/reset-password/${resetToken}`
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // Hoặc sử dụng dịch vụ email khác
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    })
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset Request',
+      text: `You requested a password reset. Click the link below to reset your password:
+      \n\n${resetLink}\n\n
+      If you did not request this, please ignore this email.`,
+    }
+
+    await transporter.sendMail(mailOptions)
+
+    return res.status(200).json({ message: 'Password reset email sent' })
+  } catch {
+    return res.status(500).json({ message: 'Internal server error' })
+  }
+}
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params
+    const { newPassword } = req.body
+
+    if (!newPassword) {
+      return res.status(400).json({ message: 'New password is required' })
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+    const user = await User.findOne({ 'resetPassword.token': hashedToken })
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired token' })
+    }
+
+    if (user.resetPassword.expiresAt < Date.now()) {
+      return res.status(400).json({ message: 'Token has expired' })
+    }
+
+    user.password = newPassword
+    user.resetPassword = {}
+
+    await user.save()
+
+    return res
+      .status(200)
+      .json({ message: 'Password has been successfully changed' })
+  } catch {
+    return res
+      .status(500)
+      .json({ message: 'An error occurred while processing the request' })
   }
 }
