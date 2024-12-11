@@ -15,14 +15,24 @@ const Router = express.Router()
 
 Router.route('/list').get(
   verifyAccessToken,
-  requirePermission(['view_variant', 'view_product']),
+  requirePermission([
+    'view_variant',
+    'manager_variant',
+    'manager_product',
+    'view_product',
+  ]),
   requireRole(['admin', 'manager']),
   adminGetListColor
 )
 Router.route('/list-no-paging').get(
   verifyAccessToken,
   requireRole(['admin', 'manager']),
-  requirePermission(['view_variant', 'view_product']),
+  requirePermission([
+    'view_variant',
+    'manager_variant',
+    'manager_product',
+    'view_product',
+  ]),
   adminGetListColorWithoutPagination
 )
 Router.route('/create').post(
