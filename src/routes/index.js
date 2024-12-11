@@ -22,6 +22,7 @@ import { userAdminRoute } from './admin/users.js'
 import { tierAdminRoute } from './admin/tier.js'
 import { blogUserRoute } from './user/blogRoute.js'
 import { userRoute } from './user/userRoute.js'
+import { orderRoute } from './admin/orderRoutes.js'
 const Router = express.Router()
 
 Router.get('/status', (req, res) => {
@@ -37,6 +38,7 @@ Router.use('/admin/blog', blogAdminRoute)
 Router.use('/admin/manager', managerRoute)
 Router.use('/admin/user', userAdminRoute)
 Router.use('/admin/tier', tierAdminRoute)
+Router.use('/admin/orders', orderRoute)
 
 Router.use('/public', publicRoute)
 Router.use('/vnpay', vnpayRoute)

@@ -27,12 +27,12 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['vnpay', 'stripe'],
+      enum: ['vnpay', 'stripe', 'cod'],
       required: true,
     },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'paid', 'failed'],
+      enum: ['pending', 'paid', 'failed', 'chưa thanh toán'],
       default: 'pending',
     },
     vnpayTransactionId: {
