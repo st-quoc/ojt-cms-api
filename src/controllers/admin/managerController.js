@@ -43,13 +43,13 @@ export const listManager = async (req, res) => {
 
     const totalManagers = await User.countDocuments({
       ...filter,
-      'role.name': 'manager',
+      role: 'manager',
     })
 
     const filteredManagers = managers.filter((manager) => manager.role)
 
     res.status(StatusCodes.OK).json({
-      total: filteredManagers.length,
+      total: totalManagers,
       totalPages: Math.ceil(totalManagers / pageSize),
       currentPage: pageNumber,
       managers: filteredManagers,
@@ -188,7 +188,7 @@ export const changeManagerStatus = async (req, res) => {
 
 export const deleteManager = async (req, res) => {
   try {
-    const { managerId } = req.params
+    const managerId = req.params.id
 
     if (!managerId) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -198,7 +198,7 @@ export const deleteManager = async (req, res) => {
 
     const manager = await User.findOneAndDelete({
       _id: managerId,
-      role: await Role.findOne({ name: 'manager' })._id,
+      role: 'manager',
     })
 
     if (!manager) {

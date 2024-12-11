@@ -7,6 +7,7 @@ import {
 import {
   changeManagerStatus,
   createManager,
+  deleteManager,
   getManagerDetail,
   listManager,
   updateManager,
@@ -40,6 +41,13 @@ Router.route('/edit/:id').put(
   requireRole(['admin', 'manager']),
   requirePermission(['manager_manager']),
   updateManager
+)
+
+Router.route('/delete/:id').delete(
+  verifyAccessToken,
+  requireRole(['admin', 'manager']),
+  requirePermission(['manager_manager']),
+  deleteManager
 )
 
 Router.route('/change-status/:id').put(

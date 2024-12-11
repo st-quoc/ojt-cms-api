@@ -152,12 +152,16 @@ export const getDetailProduct = async (req, res) => {
         .json({ message: 'Product not found' })
     }
 
-    const variants = product.variants.map((variant) => ({
-      size: variant.size,
-      color: variant.color,
-      stock: variant.stock,
-      price: variant.price,
-    }))
+    const variants = product.variants.map((variant) => {
+      if (variant.stock > 0) {
+        return {
+          size: variant.size,
+          color: variant.color,
+          stock: variant.stock,
+          price: variant.price,
+        }
+      }
+    })
 
     const productDetail = {
       id: product._id,
