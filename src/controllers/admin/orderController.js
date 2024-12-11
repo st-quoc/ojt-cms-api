@@ -60,6 +60,11 @@ export const updateOrder = async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: 'Order not found' })
     }
+
+    if (orderStatus === 'shipped') {
+      order.paymentStatus = 'paid'
+    }
+
     order.orderStatus = orderStatus
     await order.save()
     res.status(200).json(order)
