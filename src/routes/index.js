@@ -38,7 +38,7 @@ Router.use('/admin/blog', blogAdminRoute)
 Router.use('/admin/manager', managerRoute)
 Router.use('/admin/user', userAdminRoute)
 Router.use('/admin/tier', tierAdminRoute)
-Router.use('/admin/orders', orderRoute)
+Router.use('/admin/order', orderRoute)
 
 Router.use('/public', publicRoute)
 Router.use('/vnpay', vnpayRoute)

@@ -4,9 +4,28 @@ import {
   updateOrder,
 } from '../../controllers/admin/orderController.js'
 
+import {
+  verifyAccessToken,
+  requireRole,
+  requirePermission,
+} from '../../middlewares/authMiddleware.js'
+
 const router = express.Router()
 
-router.get('/', getAllOrders)
-router.put('/:orderId', updateOrder)
+router.get(
+  '/list',
+  verifyAccessToken,
+  requireRole(['admin', 'manager']),
+  requirePermission(['view_order', 'manager_order']),
+  getAllOrders
+)
+
+router.put(
+  '/:orderId',
+  verifyAccessToken,
+  requireRole(['admin', 'manager']),
+  requirePermission(['view_order', 'manager_order']),
+  updateOrder
+)
 
 export const orderRoute = router
