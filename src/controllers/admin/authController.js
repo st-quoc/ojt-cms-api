@@ -340,9 +340,16 @@ export const forgotPassword = async (req, res) => {
     }
     await user.save()
 
-    const resetLink = `${process.env.FE_HOST}/reset-password/${resetToken}`
+    let host = ''
+    if (user.role === 'user') {
+      host = process.env.FE_HOST_USER
+    } else {
+      host = process.env.FE_HOST_ADMIN
+    }
+
+    const resetLink = `${host}/reset-password/${resetToken}`
     const transporter = nodemailer.createTransport({
-      service: 'gmail', // Hoặc sử dụng dịch vụ email khác
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
