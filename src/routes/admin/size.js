@@ -8,6 +8,7 @@ import {
   adminCreateSize,
   adminDeleteSize,
   adminGetListSize,
+  adminGetListSizeWithoutPagination,
   adminUpdateSize,
 } from '../../controllers/admin/sizeController.js'
 const Router = express.Router()
@@ -17,6 +18,12 @@ Router.route('/list').get(
   requirePermission(['view_variant', 'view_product']),
   requireRole(['admin', 'manager']),
   adminGetListSize
+)
+Router.route('/list-no-paging').get(
+  verifyAccessToken,
+  requirePermission(['view_variant', 'view_product']),
+  requireRole(['admin', 'manager']),
+  adminGetListSizeWithoutPagination
 )
 Router.route('/create').post(
   verifyAccessToken,

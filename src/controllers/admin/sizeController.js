@@ -58,6 +58,22 @@ export const adminGetListSize = async (req, res) => {
   }
 }
 
+export const adminGetListSizeWithoutPagination = async (req, res) => {
+  try {
+    const { search = '' } = req.query
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {}
+
+    const sizes = await Size.find(query)
+
+    res.status(200).json({
+      total: sizes.length,
+      sizes,
+    })
+  } catch {
+    res.status(500).json({ message: 'Error fetching categories' })
+  }
+}
+
 export const adminDeleteSize = async (req, res) => {
   try {
     const { id } = req.params

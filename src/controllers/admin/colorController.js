@@ -57,6 +57,22 @@ export const adminGetListColor = async (req, res) => {
   }
 }
 
+export const adminGetListColorWithoutPagination = async (req, res) => {
+  try {
+    const { search = '' } = req.query
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {}
+
+    const colors = await Color.find(query)
+
+    res.status(200).json({
+      total: colors.length,
+      colors,
+    })
+  } catch {
+    res.status(500).json({ message: 'Error fetching categories' })
+  }
+}
+
 export const adminDeleteColor = async (req, res) => {
   try {
     const { id } = req.params
